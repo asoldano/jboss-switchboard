@@ -21,17 +21,38 @@
  */
 package org.jboss.switchboard.spi;
 
-import java.util.Collection;
-
 
 /**
- * EnvironmentVisitor
+ * A {@link ResourceProvider} resolves a particular metadata type into a {@link Resource}.
+ * <p>
+ *  The {@link Resource} is then picked up by the switchboard operator and made available
+ *  in the JNDI 
+ * </p>
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public interface EnvironmentVisitor<C, E>
+public interface Resource
 {
 
-   Collection<ENCBindingProvider> visit(C context, E environment);
+   /**
+    * Returns the dependency (for example, the name of the entity) which 
+    * has to be fulfilled before this {@link Resource} can be made available
+    * in JNDI  
+    * @return
+    */
+   Object getDependency();
+   
+   /**
+    * Returns the jndi name at which this {@link Resource} will be bound
+    * 
+    * @return
+    */
+   String getJNDIName();
+   
+   /**
+    * Returns the object which needs to be bound into JNDI for this {@link Resource} 
+    * @return
+    */
+   Object getJNDIObject();
 }

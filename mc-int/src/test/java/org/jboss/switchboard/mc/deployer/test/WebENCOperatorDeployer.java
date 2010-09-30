@@ -38,7 +38,7 @@ import org.jboss.switchboard.mc.deployer.ENCOperatorDeployer;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class WebENCOperatorDeployer extends ENCOperatorDeployer<Environment>
+public class WebENCOperatorDeployer extends ENCOperatorDeployer
 {
 
    public WebENCOperatorDeployer()

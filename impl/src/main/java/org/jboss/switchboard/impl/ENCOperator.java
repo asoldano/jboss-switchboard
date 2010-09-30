@@ -22,13 +22,14 @@
 package org.jboss.switchboard.impl;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import org.jboss.reloaded.naming.spi.JavaEEComponent;
-import org.jboss.switchboard.spi.ENCBinding;
+import org.jboss.switchboard.spi.Resource;
 import org.jboss.util.naming.Util;
 
 /**
@@ -46,17 +47,17 @@ public class ENCOperator
    private JavaEEComponent component;
 
    /** 
-    * The list of {@link ENCBinding}s which this {@link ENCOperator} has
+    * The list of {@link Resource}s which this {@link ENCOperator} has
     * to bind/unbind into/from the ENC of the {@link JavaEEComponent}
     */
-   private Collection<ENCBinding> encBindings = new HashSet<ENCBinding>();
+   private Collection<Resource> encBindings = new HashSet<Resource>();
 
    /**
-    * Constructs a {@link ENCOperator} with the passed {@link ENCBinding}s
-    * @param bindings The {@link ENCBinding}s which this {@link ENCOperator} is responsible for binding/unbinding
+    * Constructs a {@link Resource} with the passed {@link Resource}s
+    * @param bindings The {@link Resource}s which this {@link ENCOperator} is responsible for binding/unbinding
     *                   from ENC
     */
-   public ENCOperator(Collection<ENCBinding> bindings)
+   public ENCOperator(Collection<Resource> bindings)
    {
       this.encBindings = bindings;
    }
@@ -69,7 +70,7 @@ public class ENCOperator
     * @param bindings The {@link ENCBinding}s which this {@link ENCOperator} is responsible for binding/unbinding
     *                   from ENC
     */
-   public ENCOperator(JavaEEComponent component, Collection<ENCBinding> bindings)
+   public ENCOperator(JavaEEComponent component, Collection<Resource> bindings)
    {
       this(bindings);
       this.component = component;
@@ -79,7 +80,7 @@ public class ENCOperator
    public void bind() throws NamingException
    {
       Context enc = this.getContext();
-      for (ENCBinding binding : this.encBindings)
+      for (Resource binding : this.encBindings)
       {
          String jndiName = binding.getJNDIName();
          Object jndiObject = binding.getJNDIObject();
@@ -90,7 +91,7 @@ public class ENCOperator
    public void unbind() throws NamingException
    {
       Context enc = this.getContext();
-      for (ENCBinding binding : this.encBindings)
+      for (Resource binding : this.encBindings)
       {
          String jndiName = binding.getJNDIName();
          enc.unbind(jndiName);
@@ -104,6 +105,11 @@ public class ENCOperator
          throw new IllegalStateException(JavaEEComponent.class + " is already set on ENCOperator: " + this);
       }
       this.component = component;
+   }
+   
+   public Collection<Resource> getENCBindings()
+   {
+      return Collections.unmodifiableCollection(this.encBindings);
    }
    
    private Context getContext()

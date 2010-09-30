@@ -19,47 +19,40 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.impl;
-
-import javax.naming.LinkRef;
-
-import org.jboss.switchboard.spi.ENCBinding;
+package org.jboss.switchboard.spi;
 
 /**
- * LinkRefENCBinding
+ * A {@link ResourceProvider} is responsible for resolving a {@link Resource}
+ * from a given <code>context</code> and a <code>type</code>
+ * 
+ *  <p>
+ *  Typically
  *
+ * @param C The context which will be passed to the {@link ResourceProvider} during
+ *          {@link Resource} resolution. Typically, the context is a deployment unit
+ *          
+ * @param T The type of resource being resolved. An example of a resource type is a EJB local reference
+ *          or even a EJB remote reference.
+ *                   
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class LinkRefENCBinding implements ENCBinding
+public interface ResourceProvider<C, T>
 {
+   
+   /**
+    * Returns a {@link Resource} for the passed context and type
+    * 
+    * @param context The context
+    * @param type The type of resource reference which is being resolved (For example: A ejb-local-ref type)
+    * @return
+    */
+   Resource provide(C context, T type);
 
-   private String encJNDIName;
-   
-   private LinkRef linkRef;
-   
-   public LinkRefENCBinding(String encJNDIName, String targetJNDIName)
-   {
-      this.encJNDIName = encJNDIName;
-      this.linkRef = new LinkRef(targetJNDIName);
-   }
-   
-   @Override
-   public String getJNDIName()
-   {
-      return this.encJNDIName;
-   }
-   
-   @Override
-   public Object getJNDIObject()
-   {
-      return this.linkRef;
-   }
-
-   @Override
-   public Object getDependency()
-   {
-      // TODO Auto-generated method stub
-      return null;
-   }
+   /**
+    * Returns the type of resource reference, this {@link ResourceProvider} can handle.
+    * 
+    * @return
+    */
+   Class<T> getType();
 }

@@ -21,10 +21,10 @@
  */
 package org.jboss.switchboard.mc.deployer;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 import org.jboss.beans.metadata.api.annotations.Inject;
+import org.jboss.beans.metadata.plugins.AbstractDependencyMetaData;
 import org.jboss.beans.metadata.plugins.AbstractInjectionValueMetaData;
 import org.jboss.beans.metadata.plugins.builder.BeanMetaDataBuilderFactory;
 import org.jboss.beans.metadata.spi.BeanMetaData;
@@ -33,12 +33,13 @@ import org.jboss.deployers.spi.DeploymentException;
 import org.jboss.deployers.spi.deployer.DeploymentStages;
 import org.jboss.deployers.spi.deployer.helpers.AbstractDeployer;
 import org.jboss.deployers.structure.spi.DeploymentUnit;
+import org.jboss.logging.Logger;
+import org.jboss.metadata.javaee.spec.Environment;
 import org.jboss.reloaded.naming.deployers.javaee.JavaEEComponentInformer;
 import org.jboss.reloaded.naming.spi.JavaEEComponent;
 import org.jboss.switchboard.impl.ENCOperator;
-import org.jboss.switchboard.impl.EnvironmentProcessor;
-import org.jboss.switchboard.spi.ENCBinding;
-import org.jboss.switchboard.spi.ENCBindingProvider;
+import org.jboss.switchboard.spi.ResourceProviderRegistry;
+import org.jboss.switchboard.spi.Resource;
 
 /**
  * ENCOperatorDeployer
@@ -46,10 +47,13 @@ import org.jboss.switchboard.spi.ENCBindingProvider;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public abstract class ENCOperatorDeployer<E> extends AbstractDeployer
+public abstract class ENCOperatorDeployer extends AbstractDeployer
 {
 
-   private EnvironmentProcessor<DeploymentUnit, E> environmentProcessor;
+   /** Logger */
+   private static Logger logger = Logger.getLogger(ENCOperatorDeployer.class);
+   
+   private ResourceProviderRegistry<DeploymentUnit> bindingProviderRegistry;
 
    private JavaEEComponentInformer javaeeComponentInformer;
 
@@ -65,7 +69,7 @@ public abstract class ENCOperatorDeployer<E> extends AbstractDeployer
    @Override
    public void deploy(DeploymentUnit unit) throws DeploymentException
    {
-      Collection<E> environments = this.getEnvironments(unit);
+      Collection<Environment> environments = this.getEnvironments(unit);
 
       if (environments == null || environments.isEmpty())
       {
@@ -75,9 +79,9 @@ public abstract class ENCOperatorDeployer<E> extends AbstractDeployer
    }
 
    @Inject
-   public void setEnvironmentProcessor(EnvironmentProcessor<DeploymentUnit, E> processor)
+   public void setENCBindingProviderRegistry(ResourceProviderRegistry<DeploymentUnit> registry)
    {
-      this.environmentProcessor = processor;
+      this.bindingProviderRegistry = registry;
    }
 
    @Inject
@@ -86,21 +90,14 @@ public abstract class ENCOperatorDeployer<E> extends AbstractDeployer
       this.javaeeComponentInformer = informer;
    }
 
-   protected abstract Collection<E> getEnvironments(DeploymentUnit unit);
+   protected abstract Collection<Environment> getEnvironments(DeploymentUnit unit);
 
-   private void process(DeploymentUnit unit, Collection<E> environments)
+   protected void process(DeploymentUnit unit, Collection<Environment> environments)
    {
-      Collection<ENCBindingProvider> providers = this.environmentProcessor.process(unit, environments);
-      Collection<ENCBinding> encBindings = new ArrayList<ENCBinding>();
-      for (ENCBindingProvider provider : providers)
-      {
-         encBindings.add(provider.provide());
-      }
-      ENCOperator encOperator = new ENCOperator(encBindings);
-      this.createAndAttachBMD(unit, encOperator);
+      // TODO
    }
 
-   private void createAndAttachBMD(DeploymentUnit unit, ENCOperator encOperator)
+   protected void createAndAttachBMD(DeploymentUnit unit, ENCOperator encOperator)
    {
       String mcBeanName = this.getENCOperatorMCBeanName(unit, encOperator);
       BeanMetaDataBuilder builder = BeanMetaDataBuilderFactory.createBuilder(mcBeanName, ENCOperator.class.getName());
@@ -110,12 +107,23 @@ public abstract class ENCOperatorDeployer<E> extends AbstractDeployer
       String javaeeCompMCBeanName = this.getJavaEEComponentMCBeanName(unit); 
       AbstractInjectionValueMetaData javaeeComponentInjection = new AbstractInjectionValueMetaData(javaeeCompMCBeanName);
       builder.addPropertyMetaData("javaEEComponent", javaeeComponentInjection);
-
+      
+      logger.debug("Installing ENCOperator: " + mcBeanName + " for unit: " + unit.getSimpleName() + " with dependencies: ");
+      for (Resource encBinding : encOperator.getENCBindings())
+      {
+         Object dependency = encBinding.getDependency();
+         if (dependency != null)
+         {
+            logger.debug(dependency);
+            AbstractDependencyMetaData mcDependency = new AbstractDependencyMetaData(dependency);
+            builder.addDependency(mcDependency);
+         }
+      }
       unit.addAttachment(BeanMetaData.class + ":" + mcBeanName, builder.getBeanMetaData());
 
    }
 
-   private String getENCOperatorMCBeanName(DeploymentUnit unit, ENCOperator encOperator)
+   protected String getENCOperatorMCBeanName(DeploymentUnit unit, ENCOperator encOperator)
    {
       StringBuilder sb = new StringBuilder("jboss-switchboard-encoperator:");
       String appName = this.javaeeComponentInformer.getApplicationName(unit);
@@ -139,7 +147,7 @@ public abstract class ENCOperatorDeployer<E> extends AbstractDeployer
     * @param deploymentUnit
     * @return
     */
-   private String getJavaEEComponentMCBeanName(DeploymentUnit deploymentUnit)
+   protected String getJavaEEComponentMCBeanName(DeploymentUnit deploymentUnit)
    {
       String applicationName = this.javaeeComponentInformer.getApplicationName(deploymentUnit);
       String moduleName = this.javaeeComponentInformer.getModuleName(deploymentUnit);
@@ -157,4 +165,6 @@ public abstract class ENCOperatorDeployer<E> extends AbstractDeployer
       }
       return builder.toString();
    }
+   
+   
 }

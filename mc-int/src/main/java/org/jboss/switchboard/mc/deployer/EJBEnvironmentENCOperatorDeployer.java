@@ -19,42 +19,50 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.mc.test;
+package org.jboss.switchboard.mc.deployer;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
 import org.jboss.deployers.structure.spi.DeploymentUnit;
-import org.jboss.metadata.javaee.spec.EJBReferenceMetaData;
-import org.jboss.metadata.javaee.spec.EJBReferencesMetaData;
+import org.jboss.metadata.ejb.jboss.JBossEnterpriseBeansMetaData;
+import org.jboss.metadata.ejb.jboss.JBossMetaData;
 import org.jboss.metadata.javaee.spec.Environment;
-import org.jboss.switchboard.spi.ENCBindingProvider;
-import org.jboss.switchboard.spi.EnvironmentVisitor;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
 
 /**
- * EJBReferenceVisitor
+ * EJBEnvironmentENCOperatorDeployer
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class EJBReferenceVisitor implements EnvironmentVisitor<DeploymentUnit, Environment>
+public class EJBEnvironmentENCOperatorDeployer extends ENCOperatorDeployer
 {
 
-   @Override
-   public Collection<ENCBindingProvider> visit(DeploymentUnit unit, Environment environment)
+   public EJBEnvironmentENCOperatorDeployer()
    {
-      EJBReferencesMetaData ejbRefs = environment.getEjbReferences();
-      if (ejbRefs == null || ejbRefs.isEmpty())
+      super(JBossMetaData.class);
+   }
+
+   @Override
+   protected Collection<Environment> getEnvironments(DeploymentUnit unit)
+   {
+      if(unit.isAttachmentPresent(JBossWebMetaData.class))
       {
          return Collections.emptySet();
       }
-      Collection<ENCBindingProvider> providers = new HashSet<ENCBindingProvider>();
-      for (EJBReferenceMetaData ejbRef : ejbRefs)
+      JBossMetaData jbossMetadata = unit.getAttachment(JBossMetaData.class);
+      if (!jbossMetadata.isEJB3x())
       {
-         providers.add(new EJBENCBindingProvider(unit, ejbRef));
+         return Collections.emptySet();
       }
-      return providers;
+      JBossEnterpriseBeansMetaData enterpriseBeans = jbossMetadata.getEnterpriseBeans();
+      if (enterpriseBeans == null || enterpriseBeans.isEmpty())
+      {
+         return Collections.emptySet();
+      }
+      return new HashSet<Environment>(enterpriseBeans);
    }
-
+   
 }

@@ -23,6 +23,7 @@
       <version.jboss.metadata.common>2.0.0.Alpha16</version.jboss.metadata.common>
       <version.jboss.metadata.ejb>2.0.0-alpha-18</version.jboss.metadata.ejb>
       <version.jboss.metadata.war>2.0.0.Alpha14</version.jboss.metadata.war>
+      <version.ejbref.resolver>1.0.0-alpha-2</version.ejbref.resolver>
    </properties>
 
    <dependencies>
@@ -45,6 +46,13 @@
          <artifactId>jboss-metadata-common</artifactId>
          <version>${version.jboss.metadata.common}</version>
       </dependency>
+      
+      <dependency>
+         <groupId>org.jboss.metadata</groupId>
+         <artifactId>jboss-metadata-ejb</artifactId>
+         <version>${version.jboss.metadata.ejb}</version>
+      </dependency>
+      
 
       <!-- Reloaded naming -->
       <dependency>
@@ -56,6 +64,19 @@
          <groupId>org.jboss.reloaded.naming</groupId>
          <artifactId>jboss-reloaded-naming-deployers</artifactId>
       </dependency>
+      
+      <dependency>
+        <groupId>org.jboss.ejb3.ejbref.resolver</groupId>
+        <artifactId>ejbref-resolver-spi</artifactId>
+        <version>${version.ejbref.resolver}</version>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.metadata</groupId>
+         <artifactId>jboss-metadata-war</artifactId>
+         <version>${version.jboss.metadata.war}</version>
+      </dependency>
+      
 
 
       <!--  MC deployers -->
@@ -81,19 +102,7 @@
       </dependency>
 
       <!-- Test dependencies -->
-      <dependency>
-         <groupId>org.jboss.metadata</groupId>
-         <artifactId>jboss-metadata-ejb</artifactId>
-         <version>${version.jboss.metadata.ejb}</version>
-         <scope>test</scope>
-      </dependency>
 
-      <dependency>
-         <groupId>org.jboss.metadata</groupId>
-         <artifactId>jboss-metadata-war</artifactId>
-         <version>${version.jboss.metadata.war}</version>
-         <scope>test</scope>
-      </dependency>
 
 
    </dependencies>

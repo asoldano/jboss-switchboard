@@ -19,47 +19,49 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.mc.test;
+package org.jboss.switchboard.impl;
 
-import org.jboss.deployers.structure.spi.DeploymentUnit;
-import org.jboss.metadata.javaee.spec.EJBReferenceMetaData;
-import org.jboss.switchboard.impl.LinkRefENCBinding;
-import org.jboss.switchboard.spi.ENCBinding;
-import org.jboss.switchboard.spi.ENCBindingProvider;
+import javax.naming.LinkRef;
+
+import org.jboss.switchboard.spi.Resource;
 
 /**
- * EJBENCBindingProvider
+ * LinkRefENCBinding
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class EJBENCBindingProvider implements ENCBindingProvider
+public class LinkRefResource implements Resource
 {
 
-   private DeploymentUnit unit;
+   private String encJNDIName;
    
-   private EJBReferenceMetaData ejbRef;
+   private LinkRef linkRef;
    
-   public EJBENCBindingProvider(DeploymentUnit unit, EJBReferenceMetaData ejbRef)
+   private Object dependency;
+   
+   public LinkRefResource(String encJNDIName, String targetJNDIName, Object dependency)
    {
-      this.unit = unit;
-      this.ejbRef = ejbRef;
+      this.encJNDIName = encJNDIName;
+      this.linkRef = new LinkRef(targetJNDIName);
+      this.dependency = dependency;
    }
    
    @Override
-   public ENCBinding provide()
+   public String getJNDIName()
    {
-      return new LinkRefENCBinding(getENCName(), resolveTargetJNDIName());
+      return this.encJNDIName;
    }
    
-   private String getENCName()
+   @Override
+   public Object getJNDIObject()
    {
-      return null;
+      return this.linkRef;
    }
-   
-   private String resolveTargetJNDIName()
+
+   @Override
+   public Object getDependency()
    {
-      return null;
+      return this.dependency;
    }
 }
-
