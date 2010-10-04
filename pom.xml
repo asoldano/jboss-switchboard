@@ -31,7 +31,7 @@
    <modules>
       <module>spi</module>
       <module>impl</module>
-      <module>mc-int</module>
+      <module>mc-deployer</module>
    </modules>
 
    <!-- Build -->
