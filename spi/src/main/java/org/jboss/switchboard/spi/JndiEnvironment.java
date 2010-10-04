@@ -22,45 +22,15 @@
 package org.jboss.switchboard.spi;
 
 import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * EnvironmentProcessor
+ * JndiEnvironment
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class ResourceProviderRegistry<C>
+public interface JndiEnvironment
 {
 
-   private Map<Class<?>, ResourceProvider<C, ?>> bindingProviders = new ConcurrentHashMap<Class<?>, ResourceProvider<C, ?>>();
-
-   public void registerProviders(Collection<ResourceProvider<C, ?>> providers)
-   {
-      if (providers == null)
-      {
-         throw new IllegalArgumentException("ENCBindingProvider(s) cannot be null during registration");
-      }
-      for (ResourceProvider<C, ?> provider : providers)
-      {
-         this.bindingProviders.put(provider.getType(), provider);
-      }
-   }
-
-   public void registerProvider(ResourceProvider<C, ?> provider)
-   {
-      if (provider == null)
-      {
-         throw new IllegalArgumentException("ENCBindingProvider cannot be null during registration");
-      }
-      this.bindingProviders.put(provider.getType(), provider);
-   }
-
-   public ResourceProvider<C, ?> getENCBindingProvider(Class<?> type)
-   {
-
-      return this.bindingProviders.get(type);
-   }
-
+   Collection<EnvironmentEntryType> getEntries();
 }

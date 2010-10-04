@@ -21,63 +21,48 @@
  */
 package org.jboss.switchboard.mc.deployer;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 
 import org.jboss.beans.metadata.spi.BeanMetaData;
 import org.jboss.deployers.spi.DeploymentException;
 import org.jboss.deployers.structure.spi.DeploymentUnit;
-import org.jboss.metadata.ejb.jboss.JBossEnterpriseBeanMetaData;
-import org.jboss.metadata.ejb.jboss.JBossMetaData;
-import org.jboss.metadata.ejb.spec.InterceptorMetaData;
-import org.jboss.metadata.ejb.spec.InterceptorsMetaData;
 import org.jboss.metadata.javaee.spec.Environment;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.reloaded.naming.deployers.javaee.JavaEEComponentInformer;
 
 /**
- * EJBEnvironmentENCOperatorDeployer
+ * WebEnvironmentENCOperatorDeployer
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class EJBEnvironmentENCOperatorDeployer extends AbstractENCOperatorDeployer
+public class WebEnvironmentENCOperatorDeployer extends AbstractENCOperatorDeployer
 {
+   
 
-   public EJBEnvironmentENCOperatorDeployer(JavaEEComponentInformer informer)
+   public WebEnvironmentENCOperatorDeployer(JavaEEComponentInformer informer)
    {
       super(informer);
-      setComponentsOnly(true);
-      setInput(JBossEnterpriseBeanMetaData.class);
+      setInput(JBossWebMetaData.class);
       setOutput(BeanMetaData.class);
+      
    }
 
    @Override
    protected void internalDeploy(DeploymentUnit unit) throws DeploymentException
    {
-      JBossEnterpriseBeanMetaData beanMetaData = unit.getAttachment(JBossEnterpriseBeanMetaData.class);
-      if (beanMetaData == null)
+      JBossWebMetaData jbosswebMetadata = unit.getAttachment(JBossWebMetaData.class);
+      if (jbosswebMetadata == null)
       {
          return;
       }
+      Environment environment = jbosswebMetadata.getJndiEnvironmentRefsGroup();
+      Collection<Environment> environments = new HashSet<Environment>();
+      environments.add(environment);
       
-      // We only work for EJB 3.x session beans
-      if (!beanMetaData.getJBossMetaData().isEJB3x())
-      {
-         return;
-      }
-      Collection<Environment> environments = new ArrayList<Environment>();
-      environments.add(beanMetaData);
-      
-      // interceptors
-      InterceptorsMetaData interceptors = JBossMetaData.getInterceptors(beanMetaData.getEjbName(), beanMetaData.getJBossMetaData());
-      if (interceptors != null)
-      {
-         for (InterceptorMetaData interceptor : interceptors)
-         {
-            environments.add(interceptor);
-         }
-      }
       this.process(unit, environments);
    }
+
    
 }

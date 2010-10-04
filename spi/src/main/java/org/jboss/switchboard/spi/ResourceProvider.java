@@ -23,7 +23,7 @@ package org.jboss.switchboard.spi;
 
 /**
  * A {@link ResourceProvider} is responsible for resolving a {@link Resource}
- * from a given <code>context</code> and a <code>type</code>
+ * from a given <code>context</code> and a {@link EnvironmentEntryType}
  * 
  *  <p>
  *  Typically
@@ -31,28 +31,21 @@ package org.jboss.switchboard.spi;
  * @param C The context which will be passed to the {@link ResourceProvider} during
  *          {@link Resource} resolution. Typically, the context is a deployment unit
  *          
- * @param T The type of resource being resolved. An example of a resource type is a EJB local reference
- *          or even a EJB remote reference.
+ * @param T The type of {@link EnvironmentEntryType}
  *                   
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public interface ResourceProvider<C, T>
+public interface ResourceProvider<C, T extends EnvironmentEntryType>
 {
    
    /**
-    * Returns a {@link Resource} for the passed context and type
+    * Returns a {@link Resource} for the passed context and {@link EnvironmentEntryType}
     * 
     * @param context The context
-    * @param type The type of resource reference which is being resolved (For example: A ejb-local-ref type)
+    * @param type The type of environment entry
     * @return
     */
    Resource provide(C context, T type);
-
-   /**
-    * Returns the type of resource reference, this {@link ResourceProvider} can handle.
-    * 
-    * @return
-    */
-   Class<T> getType();
+   
 }

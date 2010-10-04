@@ -21,9 +21,9 @@
  */
 package org.jboss.switchboard.impl;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -50,14 +50,14 @@ public class ENCOperator
     * The list of {@link Resource}s which this {@link ENCOperator} has
     * to bind/unbind into/from the ENC of the {@link JavaEEComponent}
     */
-   private Collection<Resource> encBindings = new HashSet<Resource>();
+   private Map<String, Resource> encBindings = new HashMap<String, Resource>();
 
    /**
     * Constructs a {@link Resource} with the passed {@link Resource}s
     * @param bindings The {@link Resource}s which this {@link ENCOperator} is responsible for binding/unbinding
     *                   from ENC
     */
-   public ENCOperator(Collection<Resource> bindings)
+   public ENCOperator(Map<String, Resource> bindings)
    {
       this.encBindings = bindings;
    }
@@ -70,7 +70,7 @@ public class ENCOperator
     * @param bindings The {@link ENCBinding}s which this {@link ENCOperator} is responsible for binding/unbinding
     *                   from ENC
     */
-   public ENCOperator(JavaEEComponent component, Collection<Resource> bindings)
+   public ENCOperator(JavaEEComponent component, Map<String, Resource> bindings)
    {
       this(bindings);
       this.component = component;
@@ -80,10 +80,10 @@ public class ENCOperator
    public void bind() throws NamingException
    {
       Context enc = this.getContext();
-      for (Resource binding : this.encBindings)
+      for (Map.Entry<String, Resource> binding : this.encBindings.entrySet())
       {
-         String jndiName = binding.getJNDIName();
-         Object jndiObject = binding.getJNDIObject();
+         String jndiName = binding.getKey();
+         Object jndiObject = binding.getValue().getJNDIObject();
          Util.bind(enc, jndiName, jndiObject);
       }
    }
@@ -91,9 +91,9 @@ public class ENCOperator
    public void unbind() throws NamingException
    {
       Context enc = this.getContext();
-      for (Resource binding : this.encBindings)
+      for (Map.Entry<String, Resource> binding : this.encBindings.entrySet())
       {
-         String jndiName = binding.getJNDIName();
+         String jndiName = binding.getKey();
          enc.unbind(jndiName);
       }
    }
@@ -107,9 +107,9 @@ public class ENCOperator
       this.component = component;
    }
    
-   public Collection<Resource> getENCBindings()
+   public Map<String, Resource> getENCBindings()
    {
-      return Collections.unmodifiableCollection(this.encBindings);
+      return Collections.unmodifiableMap(this.encBindings);
    }
    
    private Context getContext()

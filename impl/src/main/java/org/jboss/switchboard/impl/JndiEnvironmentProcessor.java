@@ -19,33 +19,45 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.spi;
+package org.jboss.switchboard.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.jboss.switchboard.spi.EnvironmentEntryType;
+import org.jboss.switchboard.spi.JndiEnvironment;
+import org.jboss.switchboard.spi.Resource;
+import org.jboss.switchboard.spi.ResourceProvider;
 
 /**
- * A {@link ResourceProvider} resolves a particular metadata type into a {@link Resource}.
- * <p>
- *  The {@link Resource} is then picked up by the switchboard operator and made available
- *  in the JNDI 
- * </p>
+ * JndiEnvironmentProcessor
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public interface Resource
+public class JndiEnvironmentProcessor<C>
 {
 
-   /**
-    * Returns the dependency (for example, the name of the entity) which 
-    * has to be fulfilled before this {@link Resource} can be made available
-    * in JNDI  
-    * @return
-    */
-   Object getDependency();
+   private ResourceProviderRegistry<C> registry;
    
-   /**
-    * Returns the object which needs to be bound into JNDI for this {@link Resource} 
-    * @return
-    */
-   Object getJNDIObject();
+   public JndiEnvironmentProcessor(ResourceProviderRegistry<C> registry)
+   {
+      this.registry = registry;
+   }
+   
+   public Map<String, Resource> process(C context, JndiEnvironment environment)
+   {
+      Map<String, Resource> resources = new HashMap<String, Resource>();
+      for (EnvironmentEntryType type : environment.getEntries())
+      {
+         ResourceProvider<C, EnvironmentEntryType> provider = this.registry.getResourceProvider(type);
+         if (provider == null)
+         {
+            continue;
+         }
+         Resource resource = provider.provide(context, type);
+         resources.put(type.getName(), resource);
+      }
+      return resources;
+   }
 }

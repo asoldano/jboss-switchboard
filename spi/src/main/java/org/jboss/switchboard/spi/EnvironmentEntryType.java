@@ -19,49 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.impl;
-
-import javax.naming.LinkRef;
-
-import org.jboss.switchboard.spi.Resource;
+package org.jboss.switchboard.spi;
 
 /**
- * LinkRefENCBinding
+ * EnvironmentEntryType
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class LinkRefResource implements Resource
+public interface EnvironmentEntryType
 {
-
-   private String encJNDIName;
-   
-   private LinkRef linkRef;
-   
-   private Object dependency;
-   
-   public LinkRefResource(String encJNDIName, String targetJNDIName, Object dependency)
-   {
-      this.encJNDIName = encJNDIName;
-      this.linkRef = new LinkRef(targetJNDIName);
-      this.dependency = dependency;
-   }
-   
-   @Override
-   public String getJNDIName()
-   {
-      return this.encJNDIName;
-   }
-   
-   @Override
-   public Object getJNDIObject()
-   {
-      return this.linkRef;
-   }
-
-   @Override
-   public Object getDependency()
-   {
-      return this.dependency;
-   }
+   /**
+    * The name is a JNDI name relative to the java:comp/env
+    * context. The name must be unique within a Deployment
+    * Component.
+    * @return the name of a Deployment Component's environment entry
+    */
+   String getName();
 }
