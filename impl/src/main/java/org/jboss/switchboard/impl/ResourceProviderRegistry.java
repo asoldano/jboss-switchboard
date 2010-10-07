@@ -21,6 +21,9 @@
  */
 package org.jboss.switchboard.impl;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,7 +50,7 @@ public class ResourceProviderRegistry<C>
       }
       for (ResourceProvider<C, ?> provider : providers)
       {
-        // this.bindingProviders.put(provider.getType(), provider);
+         this.registerProvider(provider);
       }
    }
 
@@ -57,13 +60,52 @@ public class ResourceProviderRegistry<C>
       {
          throw new IllegalArgumentException("ENCBindingProvider cannot be null during registration");
       }
-     // this.bindingProviders.put(provider.getType(), provider);
+      Class<?> type = this.getProviderEnvEntryType(provider);
+      this.bindingProviders.put(type, provider);
    }
 
-   public <T extends EnvironmentEntryType> ResourceProvider<C, T> getResourceProvider(T type)
+   public ResourceProvider<C, ? extends EnvironmentEntryType> getResourceProvider(EnvironmentEntryType type)
    {
-      return null;
-      //return this.bindingProviders.get(type);
+      return this.bindingProviders.get(type.getClass());
+   }
+   
+   /**
+    * Determine the Processor<T, ?> T generic processorType class.
+    * 
+    * @param processor
+    * @return The Class for the T parameter type.
+    */
+   private Class<?> getProviderEnvEntryType(ResourceProvider<C, ? extends EnvironmentEntryType> provider)
+   {
+      // Find the ResourceProvider<C, T extends EnvironmentEntryType> interface
+      Type[] interfaces = provider.getClass().getGenericInterfaces();
+      Type resourceProviderIntf = null;
+      for(Type t : interfaces)
+      {
+         ParameterizedType pt = (ParameterizedType) t;
+         Type rawType = pt.getRawType();
+         if((rawType instanceof Class) && ((Class<?>)rawType).getName().equals(ResourceProvider.class.getName()))
+         {
+            resourceProviderIntf = t;
+            break;
+         }
+      }
+      if(resourceProviderIntf == null)
+         throw new IllegalStateException("No generic Processor interface found on: "+provider);
+
+      // Get the type of the T parameter
+      ParameterizedType pt = (ParameterizedType) resourceProviderIntf;
+      Type envEntryTypeParameter = pt.getActualTypeArguments()[1];
+      Class<?> evnEntryType = null;
+      if(envEntryTypeParameter instanceof Class)
+         evnEntryType = (Class<?>) envEntryTypeParameter;
+      else if(envEntryTypeParameter instanceof TypeVariable)
+      {
+         TypeVariable tv = (TypeVariable) envEntryTypeParameter;
+         evnEntryType = (Class<?>)tv.getBounds()[0];
+      }
+      
+      return evnEntryType;
    }
 
 }

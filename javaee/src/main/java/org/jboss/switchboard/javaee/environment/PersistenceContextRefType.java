@@ -19,45 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.impl;
+package org.jboss.switchboard.javaee.environment;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Properties;
+
+import javax.persistence.PersistenceContextType;
 
 import org.jboss.switchboard.spi.EnvironmentEntryType;
-import org.jboss.switchboard.spi.JndiEnvironment;
-import org.jboss.switchboard.spi.Resource;
-import org.jboss.switchboard.spi.ResourceProvider;
 
 /**
- * JndiEnvironmentProcessor
+ * PersistenceContextRefType
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class JndiEnvironmentProcessor<C>
+public interface PersistenceContextRefType extends EnvironmentEntryType, JavaEEResourceType
 {
 
-   private ResourceProviderRegistry<C> registry;
+   /**
+    * Returns the persistence unit name 
+    * @return
+    */
+   String getPersistenceUnitName();
    
-   public JndiEnvironmentProcessor(ResourceProviderRegistry<C> registry)
-   {
-      this.registry = registry;
-   }
+   /**
+    * Returns the properties that are meant for configuring persistence providers  
+    * @return
+    */
+   Properties getPersistenceProperties();
    
-   public Map<String, Resource> process(C context, JndiEnvironment environment)
-   {
-      Map<String, Resource> resources = new HashMap<String, Resource>();
-      for (EnvironmentEntryType type : environment.getEntries())
-      {
-         ResourceProvider<C, EnvironmentEntryType> provider = (ResourceProvider<C, EnvironmentEntryType>) this.registry.getResourceProvider(type);
-         if (provider == null)
-         {
-            continue;
-         }
-         Resource resource = provider.provide(context, type);
-         resources.put(type.getName(), resource);
-      }
-      return resources;
-   }
+   /**
+    * Returns the type of persistence context
+    * @return
+    */
+   PersistenceContextType getPersistenceContextType();
 }

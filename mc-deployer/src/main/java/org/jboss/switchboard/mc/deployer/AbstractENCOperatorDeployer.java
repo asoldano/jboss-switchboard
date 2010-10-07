@@ -40,6 +40,7 @@ import org.jboss.reloaded.naming.deployers.javaee.JavaEEComponentInformer;
 import org.jboss.reloaded.naming.spi.JavaEEComponent;
 import org.jboss.switchboard.impl.ENCOperator;
 import org.jboss.switchboard.impl.JndiEnvironmentProcessor;
+import org.jboss.switchboard.jbmeta.javaee.environment.JndiEnvironmentMetadata;
 import org.jboss.switchboard.spi.JndiEnvironment;
 import org.jboss.switchboard.spi.Resource;
 
@@ -99,7 +100,7 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
 
    private JndiEnvironment convert(Environment environment)
    {
-      return null;
+      return new JndiEnvironmentMetadata(environment);
    }
    
    private void createAndAttachBMD(DeploymentUnit unit, ENCOperator encOperator)

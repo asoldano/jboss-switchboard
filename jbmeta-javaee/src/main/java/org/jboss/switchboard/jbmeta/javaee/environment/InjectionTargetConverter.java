@@ -19,45 +19,34 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.impl;
+package org.jboss.switchboard.jbmeta.javaee.environment;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collection;
 
-import org.jboss.switchboard.spi.EnvironmentEntryType;
-import org.jboss.switchboard.spi.JndiEnvironment;
-import org.jboss.switchboard.spi.Resource;
-import org.jboss.switchboard.spi.ResourceProvider;
+import org.jboss.metadata.javaee.spec.ResourceInjectionTargetMetaData;
+import org.jboss.switchboard.javaee.environment.InjectionTarget;
 
 /**
- * JndiEnvironmentProcessor
+ * InjectionTargetConverter
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class JndiEnvironmentProcessor<C>
+public class InjectionTargetConverter
 {
 
-   private ResourceProviderRegistry<C> registry;
-   
-   public JndiEnvironmentProcessor(ResourceProviderRegistry<C> registry)
+   public static Collection<InjectionTarget> convert(Collection<ResourceInjectionTargetMetaData> resourceInjectionTargets)
    {
-      this.registry = registry;
-   }
-   
-   public Map<String, Resource> process(C context, JndiEnvironment environment)
-   {
-      Map<String, Resource> resources = new HashMap<String, Resource>();
-      for (EnvironmentEntryType type : environment.getEntries())
+      if (resourceInjectionTargets == null)
       {
-         ResourceProvider<C, EnvironmentEntryType> provider = (ResourceProvider<C, EnvironmentEntryType>) this.registry.getResourceProvider(type);
-         if (provider == null)
-         {
-            continue;
-         }
-         Resource resource = provider.provide(context, type);
-         resources.put(type.getName(), resource);
+         return null;
       }
-      return resources;
+      Collection<InjectionTarget> injectionTargets = new ArrayList<InjectionTarget>(resourceInjectionTargets.size());
+      for (ResourceInjectionTargetMetaData resourceInjectionTarget : resourceInjectionTargets)
+      {
+         injectionTargets.add(new InjectionTargetMetaData(resourceInjectionTarget));
+      }
+      return injectionTargets;
    }
 }

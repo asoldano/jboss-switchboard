@@ -19,45 +19,56 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.impl;
+package org.jboss.switchboard.jbmeta.javaee.environment;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collection;
 
-import org.jboss.switchboard.spi.EnvironmentEntryType;
-import org.jboss.switchboard.spi.JndiEnvironment;
-import org.jboss.switchboard.spi.Resource;
-import org.jboss.switchboard.spi.ResourceProvider;
+import org.jboss.switchboard.javaee.environment.InjectionTarget;
+import org.jboss.switchboard.javaee.environment.JavaEEResourceType;
 
 /**
- * JndiEnvironmentProcessor
+ * AbstractJavaEEResource
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class JndiEnvironmentProcessor<C>
+public class JavaEEResource implements JavaEEResourceType
 {
 
-   private ResourceProviderRegistry<C> registry;
+   private String lookupName;
    
-   public JndiEnvironmentProcessor(ResourceProviderRegistry<C> registry)
+   private String mappedName;
+   
+   private Collection<InjectionTarget> injectionTargets;
+   
+   public JavaEEResource()
    {
-      this.registry = registry;
+      
    }
    
-   public Map<String, Resource> process(C context, JndiEnvironment environment)
+   public JavaEEResource(String lookupName, String mappedName, Collection<InjectionTarget> injectionTargets)
    {
-      Map<String, Resource> resources = new HashMap<String, Resource>();
-      for (EnvironmentEntryType type : environment.getEntries())
-      {
-         ResourceProvider<C, EnvironmentEntryType> provider = (ResourceProvider<C, EnvironmentEntryType>) this.registry.getResourceProvider(type);
-         if (provider == null)
-         {
-            continue;
-         }
-         Resource resource = provider.provide(context, type);
-         resources.put(type.getName(), resource);
-      }
-      return resources;
+      this.lookupName = lookupName;
+      this.mappedName = mappedName;
+      this.injectionTargets = injectionTargets;
    }
+   
+   @Override
+   public Collection<InjectionTarget> getInjectionTargets()
+   {
+      return this.injectionTargets;
+   }
+
+   @Override
+   public String getLookupName()
+   {
+      return this.lookupName;
+   }
+
+   @Override
+   public String getMappedName()
+   {
+      return this.mappedName;
+   }
+
 }

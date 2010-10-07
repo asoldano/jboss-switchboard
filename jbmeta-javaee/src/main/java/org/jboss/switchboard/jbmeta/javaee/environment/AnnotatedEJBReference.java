@@ -19,45 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.impl;
+package org.jboss.switchboard.jbmeta.javaee.environment;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jboss.switchboard.spi.EnvironmentEntryType;
-import org.jboss.switchboard.spi.JndiEnvironment;
-import org.jboss.switchboard.spi.Resource;
-import org.jboss.switchboard.spi.ResourceProvider;
+import org.jboss.metadata.javaee.spec.AnnotatedEJBReferenceMetaData;
+import org.jboss.switchboard.javaee.environment.AnnotatedEJBRefType;
 
 /**
- * JndiEnvironmentProcessor
+ * AnnotatedEJBReference
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class JndiEnvironmentProcessor<C>
+public class AnnotatedEJBReference extends AbstractEJBReference implements AnnotatedEJBRefType 
 {
 
-   private ResourceProviderRegistry<C> registry;
+   private AnnotatedEJBReferenceMetaData annotatedEjbRefDelegate;
    
-   public JndiEnvironmentProcessor(ResourceProviderRegistry<C> registry)
+   public AnnotatedEJBReference(AnnotatedEJBReferenceMetaData annotatedEjbRef)
    {
-      this.registry = registry;
+      super(annotatedEjbRef);
+      this.annotatedEjbRefDelegate = annotatedEjbRef;
    }
    
-   public Map<String, Resource> process(C context, JndiEnvironment environment)
+   @Override
+   public String getBeanInterface()
    {
-      Map<String, Resource> resources = new HashMap<String, Resource>();
-      for (EnvironmentEntryType type : environment.getEntries())
-      {
-         ResourceProvider<C, EnvironmentEntryType> provider = (ResourceProvider<C, EnvironmentEntryType>) this.registry.getResourceProvider(type);
-         if (provider == null)
-         {
-            continue;
-         }
-         Resource resource = provider.provide(context, type);
-         resources.put(type.getName(), resource);
-      }
-      return resources;
+      return this.annotatedEjbRefDelegate.getBeanInterface() == null ? null : this.annotatedEjbRefDelegate.getBeanInterface().getName();
    }
+
+   @Override
+   public String getBeanName()
+   {
+      return this.annotatedEjbRefDelegate.getLink();
+   }
+
 }
