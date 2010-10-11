@@ -19,45 +19,44 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.impl;
+package org.jboss.switchboard.impl.test.common;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jboss.switchboard.spi.EnvironmentEntryType;
-import org.jboss.switchboard.spi.JndiEnvironment;
 import org.jboss.switchboard.spi.Resource;
-import org.jboss.switchboard.spi.ResourceProvider;
 
 /**
- * JndiEnvironmentProcessor
+ * DummyResource
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class JndiEnvironmentProcessor<C>
+public class DummyResource implements Resource
 {
 
-   private ResourceProviderRegistry<C> registry;
-   
-   public JndiEnvironmentProcessor(ResourceProviderRegistry<C> registry)
+   private Object dependency;
+
+   private Object jndiObject;
+
+   public DummyResource()
    {
-      this.registry = registry;
+
    }
-   
-   public Map<String, Resource> process(C context, JndiEnvironment environment)
+
+   public DummyResource(Object dependency, Object jndiObject)
    {
-      Map<String, Resource> resources = new HashMap<String, Resource>();
-      for (EnvironmentEntryType type : environment.getEntries())
-      {
-         ResourceProvider<C, EnvironmentEntryType> provider = (ResourceProvider<C, EnvironmentEntryType>) this.registry.getResourceProvider(type.getClass());
-         if (provider == null)
-         {
-            continue;
-         }
-         Resource resource = provider.provide(context, type);
-         resources.put(type.getName(), resource);
-      }
-      return resources;
+      this.dependency = dependency;
+      this.jndiObject = jndiObject;
    }
+
+   @Override
+   public Object getDependency()
+   {
+      return this.dependency;
+   }
+
+   @Override
+   public Object getJNDIObject()
+   {
+      return this.jndiObject;
+   }
+
 }

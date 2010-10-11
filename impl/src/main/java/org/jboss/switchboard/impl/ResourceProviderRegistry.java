@@ -64,9 +64,9 @@ public class ResourceProviderRegistry<C>
       this.bindingProviders.put(type, provider);
    }
 
-   public ResourceProvider<C, ? extends EnvironmentEntryType> getResourceProvider(EnvironmentEntryType type)
+   public ResourceProvider<C, ? extends EnvironmentEntryType> getResourceProvider(Class<? extends EnvironmentEntryType> type)
    {
-      return this.bindingProviders.get(type.getClass());
+      return this.bindingProviders.get(type);
    }
    
    /**

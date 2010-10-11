@@ -19,45 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.impl;
+package org.jboss.switchboard.impl.test.common;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collection;
 
 import org.jboss.switchboard.spi.EnvironmentEntryType;
 import org.jboss.switchboard.spi.JndiEnvironment;
-import org.jboss.switchboard.spi.Resource;
-import org.jboss.switchboard.spi.ResourceProvider;
 
 /**
- * JndiEnvironmentProcessor
+ * DummyJndiEnvironment
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class JndiEnvironmentProcessor<C>
+public class DummyJndiEnvironment implements JndiEnvironment
 {
 
-   private ResourceProviderRegistry<C> registry;
+   private Collection<EnvironmentEntryType> entries;
    
-   public JndiEnvironmentProcessor(ResourceProviderRegistry<C> registry)
+   public DummyJndiEnvironment(Collection<EnvironmentEntryType> entries)
    {
-      this.registry = registry;
+      this.entries = entries;
    }
    
-   public Map<String, Resource> process(C context, JndiEnvironment environment)
+   @Override
+   public Collection<EnvironmentEntryType> getEntries()
    {
-      Map<String, Resource> resources = new HashMap<String, Resource>();
-      for (EnvironmentEntryType type : environment.getEntries())
-      {
-         ResourceProvider<C, EnvironmentEntryType> provider = (ResourceProvider<C, EnvironmentEntryType>) this.registry.getResourceProvider(type.getClass());
-         if (provider == null)
-         {
-            continue;
-         }
-         Resource resource = provider.provide(context, type);
-         resources.put(type.getName(), resource);
-      }
-      return resources;
+      return this.entries;
    }
+
 }
