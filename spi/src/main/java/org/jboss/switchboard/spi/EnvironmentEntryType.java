@@ -22,7 +22,9 @@
 package org.jboss.switchboard.spi;
 
 /**
- * EnvironmentEntryType
+ * {@link EnvironmentEntryType} represents a resource reference that has to be made 
+ * available in a Java EE component's java:comp/env namespace. 
+ * 
  *
  * @author Jaikiran Pai
  * @version $Revision: $

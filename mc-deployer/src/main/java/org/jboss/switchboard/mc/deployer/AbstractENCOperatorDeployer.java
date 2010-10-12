@@ -105,7 +105,7 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
    
    private void createAndAttachBMD(DeploymentUnit unit, ENCOperator encOperator)
    {
-      String mcBeanName = this.getENCOperatorMCBeanName(unit, encOperator);
+      String mcBeanName = this.getENCOperatorMCBeanName(unit);
       BeanMetaDataBuilder builder = BeanMetaDataBuilderFactory.createBuilder(mcBeanName, ENCOperator.class.getName());
 
       builder.setConstructorValue(encOperator);
@@ -129,7 +129,7 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
 
    }
 
-   private String getENCOperatorMCBeanName(DeploymentUnit unit, ENCOperator encOperator)
+   private String getENCOperatorMCBeanName(DeploymentUnit unit)
    {
       StringBuilder sb = new StringBuilder("jboss-switchboard-encoperator:");
       String appName = this.getApplicationName(unit);

@@ -44,8 +44,8 @@ public interface Resource
    Object getDependency();
    
    /**
-    * Returns the object which needs to be bound into JNDI for this {@link Resource} 
+    * Returns the target object corresponding to this {@link Resource} 
     * @return
     */
-   Object getJNDIObject();
+   Object getTarget();
 }

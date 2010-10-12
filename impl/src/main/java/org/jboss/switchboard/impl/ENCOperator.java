@@ -41,6 +41,8 @@ import org.jboss.util.naming.Util;
 public class ENCOperator
 {
 
+   private String id;
+   
    /** 
     * {@link JavaEEComponent} on which this {@link ENCOperator} operates
     */
@@ -54,17 +56,20 @@ public class ENCOperator
 
    /**
     * Constructs a {@link Resource} with the passed {@link Resource}s
+    * @param barrierId 
     * @param bindings The {@link Resource}s which this {@link ENCOperator} is responsible for binding/unbinding
     *                   from ENC
     */
    public ENCOperator(Map<String, Resource> bindings)
    {
+      
       this.encBindings = bindings;
    }
    
    /**
     * Constructs a {@link ENCOperator} for a {@link JavaEEComponent}
     * 
+    * @param barrierId
     * @param component The {@link JavaEEComponent} into whose {@link Context}, this {@link ENCOperator} will
     *                   bind/unbind the {@link ENCBinding}s
     * @param bindings The {@link ENCBinding}s which this {@link ENCOperator} is responsible for binding/unbinding
@@ -76,6 +81,11 @@ public class ENCOperator
       this.component = component;
    }
 
+//   @Override
+//   public String getId()
+//   {
+//      return this.id;
+//   }
    
    public void bind() throws NamingException
    {
@@ -83,7 +93,7 @@ public class ENCOperator
       for (Map.Entry<String, Resource> binding : this.encBindings.entrySet())
       {
          String jndiName = binding.getKey();
-         Object jndiObject = binding.getValue().getJNDIObject();
+         Object jndiObject = binding.getValue().getTarget();
          Util.bind(enc, jndiName, jndiObject);
       }
    }

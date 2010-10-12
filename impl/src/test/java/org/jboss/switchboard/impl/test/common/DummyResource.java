@@ -54,7 +54,7 @@ public class DummyResource implements Resource
    }
 
    @Override
-   public Object getJNDIObject()
+   public Object getTarget()
    {
       return this.jndiObject;
    }
