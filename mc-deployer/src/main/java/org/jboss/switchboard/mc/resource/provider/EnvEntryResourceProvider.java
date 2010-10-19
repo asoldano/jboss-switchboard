@@ -35,31 +35,52 @@ import org.jboss.switchboard.spi.Resource;
 import org.jboss.switchboard.spi.ResourceProvider;
 
 /**
- * EnvEntryResourceProvider
+ * A {@link ResourceProvider} for env-entry in a Java EE environment
  *
  * @author Jaikiran Pai
  * @version $Revision: $
- * @param <C>
+ * 
  */
 public class EnvEntryResourceProvider implements ResourceProvider<DeploymentUnit, SimpleEnvironmentEntryType>
 {
 
+   /**
+    * Logger
+    */
    private static Logger logger = Logger.getLogger(EnvEntryResourceProvider.class);
 
+   /**
+    * 
+    * Processes the passed {@link SimpleEnvironmentEntryType} and creates a {@link Resource}
+    * out of it 
+    */
    @Override
    public Resource provide(DeploymentUnit deploymentUnit, SimpleEnvironmentEntryType envEntry)
    {
       ClassLoader cl = deploymentUnit.getClassLoader();
+      // get the env-entry value
       Object targetValue = this.getEnvEntryValue(cl, envEntry);
+      // create a resource for this target value
       Resource resource = new IndependentResource(targetValue);
+      
+      // return it!
       return resource;
    }
    
    
 
+   /**
+    * Creates and returns the env-entry-value represented by the {@link SimpleEnvironmentEntryType#getValue()}
+    * 
+    * @param cl The {@link ClassLoader} to use while processing the metadata
+    * @param envEntry The Java EE env-entry
+    * @return
+    */
    private Object getEnvEntryValue(ClassLoader cl, SimpleEnvironmentEntryType envEntry)
    {
+      // find out the type of the env-entry
       String envEntryType = this.getEnvEntryType(cl, envEntry);
+      // get the (string) value
       String value = envEntry.getValue();
 
       if (envEntryType == null)
@@ -67,6 +88,8 @@ public class EnvEntryResourceProvider implements ResourceProvider<DeploymentUnit
          return value;
       }
 
+      // Now, convert the string value to it's appropriate type and return
+      
       if (envEntryType.equals(String.class.getName()))
       {
          return value;
@@ -121,6 +144,24 @@ public class EnvEntryResourceProvider implements ResourceProvider<DeploymentUnit
       }
    }
 
+   /**
+    * Returns the env-entry-type for the passed {@link SimpleEnvironmentEntryType}.
+    * <p>
+    *   If the passed env-entry has the env-entry-type explicitly specified, then
+    *   that value is returned. Else, this method checks for the presence of any
+    *   injection targets for this env-entry. If there's a injection target, then
+    *   the env-entry-type is deduced based on the field/method of the injection target. 
+    * </p>
+    * <p>
+    *   This method returns null if the env-entry-type isn't explicitly specified and 
+    *   if the env-entry-type could not be deduced from the injection targets of this
+    *   env-entry.
+    * </p>
+    * 
+    * @param cl The {@link ClassLoader} to be used during processing the metadata
+    * @param envEntry The Java EE env-entry
+    * @return
+    */
    private String getEnvEntryType(ClassLoader cl, SimpleEnvironmentEntryType envEntry)
    {
       // first check whether the type is explicitly specified

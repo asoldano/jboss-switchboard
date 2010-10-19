@@ -32,7 +32,7 @@ import org.jboss.switchboard.spi.EnvironmentEntryType;
 import org.jboss.switchboard.spi.ResourceProvider;
 
 /**
- * EnvironmentProcessor
+ * ResourceProviderRegistry
  *
  * @author Jaikiran Pai
  * @version $Revision: $
