@@ -22,32 +22,13 @@
 package org.jboss.switchboard.spi;
 
 /**
- * A {@link ResourceProvider} is responsible for resolving a {@link Resource}
- * from a given <code>context</code> and a {@link EnvironmentEntryType}
- * 
- *  <p>
- *  Typically
+ * Barrier
  *
- * @param C The context which will be passed to the {@link ResourceProvider} during
- *          {@link Resource} resolution. Typically, the context is a deployment unit
- *          
- * @param T The type of {@link EnvironmentEntryType}
- *                   
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public interface ResourceProvider<C, T extends EnvironmentEntryType>
+public interface Barrier
 {
-   
-   /**
-    * Returns a {@link Resource} for the passed context and {@link EnvironmentEntryType}
-    * 
-    * @param context The context
-    * @param type The type of environment entry
-    * @return
-    */
-   Resource provide(C context, T type);
-   
-   
-   
+
+   String getId();
 }

@@ -40,7 +40,7 @@ import org.jboss.switchboard.spi.ResourceProvider;
 public class ResourceProviderRegistry<C>
 {
 
-   private  Map<Class<?>, ResourceProvider<C, ? extends EnvironmentEntryType>> bindingProviders = new ConcurrentHashMap<Class<?>, ResourceProvider<C, ? extends EnvironmentEntryType>>();
+   private Map<Class<?>, ResourceProvider<C, ? extends EnvironmentEntryType>> bindingProviders = new ConcurrentHashMap<Class<?>, ResourceProvider<C, ? extends EnvironmentEntryType>>();
 
    public void registerProviders(Collection<ResourceProvider<C, ? extends EnvironmentEntryType>> providers)
    {
@@ -64,11 +64,46 @@ public class ResourceProviderRegistry<C>
       this.bindingProviders.put(type, provider);
    }
 
-   public ResourceProvider<C, ? extends EnvironmentEntryType> getResourceProvider(Class<? extends EnvironmentEntryType> type)
+   public ResourceProvider<C, ? extends EnvironmentEntryType> getResourceProvider(
+         Class<? extends EnvironmentEntryType> type)
    {
-      return this.bindingProviders.get(type);
+
+      ResourceProvider<C, ? extends EnvironmentEntryType> provider = this.bindingProviders.get(type);
+      if (provider != null)
+      {
+         return provider;
+      }
+      Class<?> entryType = type.getSuperclass();
+      while (entryType != null && EnvironmentEntryType.class.isAssignableFrom(entryType))
+      {
+         provider = this.getResourceProvider((Class<? extends EnvironmentEntryType>) entryType);
+         if (provider != null)
+         {
+            return provider;
+         }
+         entryType = entryType.getSuperclass();
+
+      }
+
+      Class<?>[] interfaces = type.getInterfaces();
+      for (Class<?> intf : interfaces)
+      {
+         if (EnvironmentEntryType.class.isAssignableFrom(intf))
+         {
+            provider = this.getResourceProvider((Class<? extends EnvironmentEntryType>) intf);
+            if (provider != null)
+            {
+               return provider;
+            }
+         }
+      }
+
+      return provider;
+
    }
+
    
+
    /**
     * Determine the Processor<T, ?> T generic processorType class.
     * 
@@ -80,31 +115,31 @@ public class ResourceProviderRegistry<C>
       // Find the ResourceProvider<C, T extends EnvironmentEntryType> interface
       Type[] interfaces = provider.getClass().getGenericInterfaces();
       Type resourceProviderIntf = null;
-      for(Type t : interfaces)
+      for (Type t : interfaces)
       {
          ParameterizedType pt = (ParameterizedType) t;
          Type rawType = pt.getRawType();
-         if((rawType instanceof Class) && ((Class<?>)rawType).getName().equals(ResourceProvider.class.getName()))
+         if ((rawType instanceof Class) && ((Class<?>) rawType).getName().equals(ResourceProvider.class.getName()))
          {
             resourceProviderIntf = t;
             break;
          }
       }
-      if(resourceProviderIntf == null)
-         throw new IllegalStateException("No generic Processor interface found on: "+provider);
+      if (resourceProviderIntf == null)
+         throw new IllegalStateException("No generic Processor interface found on: " + provider);
 
       // Get the type of the T parameter
       ParameterizedType pt = (ParameterizedType) resourceProviderIntf;
       Type envEntryTypeParameter = pt.getActualTypeArguments()[1];
       Class<?> evnEntryType = null;
-      if(envEntryTypeParameter instanceof Class)
+      if (envEntryTypeParameter instanceof Class)
          evnEntryType = (Class<?>) envEntryTypeParameter;
-      else if(envEntryTypeParameter instanceof TypeVariable)
+      else if (envEntryTypeParameter instanceof TypeVariable)
       {
          TypeVariable tv = (TypeVariable) envEntryTypeParameter;
-         evnEntryType = (Class<?>)tv.getBounds()[0];
+         evnEntryType = (Class<?>) tv.getBounds()[0];
       }
-      
+
       return evnEntryType;
    }
 

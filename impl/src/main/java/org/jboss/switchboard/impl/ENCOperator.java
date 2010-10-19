@@ -28,6 +28,7 @@ import java.util.Map;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+import org.jboss.logging.Logger;
 import org.jboss.reloaded.naming.spi.JavaEEComponent;
 import org.jboss.switchboard.spi.Resource;
 import org.jboss.util.naming.Util;
@@ -41,12 +42,15 @@ import org.jboss.util.naming.Util;
 public class ENCOperator
 {
 
-   private String id;
+   /**
+    * Logger
+    */
+   private static Logger logger = Logger.getLogger(ENCOperator.class);
    
    /** 
     * {@link JavaEEComponent} on which this {@link ENCOperator} operates
     */
-   private JavaEEComponent component;
+   private Context jndiContext;
 
    /** 
     * The list of {@link Resource}s which this {@link ENCOperator} has
@@ -54,6 +58,8 @@ public class ENCOperator
     */
    private Map<String, Resource> encBindings = new HashMap<String, Resource>();
 
+   private boolean contextPopulated;
+   
    /**
     * Constructs a {@link Resource} with the passed {@link Resource}s
     * @param barrierId 
@@ -62,7 +68,6 @@ public class ENCOperator
     */
    public ENCOperator(Map<String, Resource> bindings)
    {
-      
       this.encBindings = bindings;
    }
    
@@ -75,46 +80,43 @@ public class ENCOperator
     * @param bindings The {@link ENCBinding}s which this {@link ENCOperator} is responsible for binding/unbinding
     *                   from ENC
     */
-   public ENCOperator(JavaEEComponent component, Map<String, Resource> bindings)
+   public ENCOperator(Context jndiContext, Map<String, Resource> bindings)
    {
       this(bindings);
-      this.component = component;
+      this.jndiContext = jndiContext;
    }
 
-//   @Override
-//   public String getId()
-//   {
-//      return this.id;
-//   }
    
    public void bind() throws NamingException
    {
-      Context enc = this.getContext();
       for (Map.Entry<String, Resource> binding : this.encBindings.entrySet())
       {
          String jndiName = binding.getKey();
          Object jndiObject = binding.getValue().getTarget();
-         Util.bind(enc, jndiName, jndiObject);
+         Util.bind(this.jndiContext, jndiName, jndiObject);
+         logger.debug("ENCOperator " + this.jndiContext + " bound ENC resource in java:comp namespace at jndiName " + jndiName);
       }
+      this.contextPopulated = true;
    }
 
    public void unbind() throws NamingException
    {
-      Context enc = this.getContext();
       for (Map.Entry<String, Resource> binding : this.encBindings.entrySet())
       {
          String jndiName = binding.getKey();
-         enc.unbind(jndiName);
+         this.jndiContext.unbind(jndiName);
+         logger.debug("ENCOperator " + this.jndiContext + " unbound ENC resource in java:comp namespace from jndiName " + jndiName);
       }
+      this.contextPopulated = false;
    }
    
-   public void setJavaEEComponent(JavaEEComponent component)
+   public void setContext(Context ctx)
    {
-      if (this.component != null)
+      if (this.jndiContext != null)
       {
-         throw new IllegalStateException(JavaEEComponent.class + " is already set on ENCOperator: " + this);
+         throw new IllegalStateException("JNDI context is already set on ENCOperator: " + this);
       }
-      this.component = component;
+      this.jndiContext = ctx;
    }
    
    public Map<String, Resource> getENCBindings()
@@ -122,13 +124,23 @@ public class ENCOperator
       return Collections.unmodifiableMap(this.encBindings);
    }
    
-   private Context getContext()
+   public boolean isENCInitialized()
    {
-      if (this.component == null)
+      return this.contextPopulated;
+   }
+   
+   public void addENCBinding(Map<String, Resource> resources)
+   {
+      if (resources == null)
       {
-         throw new IllegalStateException(JavaEEComponent.class + " is not set, cannot get context");
+         throw new IllegalArgumentException("Resources cannot be null while adding ENC bindings to barrier: " + this);
       }
-      return this.component.getContext();
+      
+      if (this.contextPopulated)
+      {
+         throw new IllegalStateException("ENC context for barrier: " + this + " is already populated, cannot add more ENC bindings");
+      }
+      this.encBindings.putAll(resources);
    }
    
 

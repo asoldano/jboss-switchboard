@@ -19,35 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.spi;
+package org.jboss.switchboard.mc.resource;
+
+import org.jboss.deployers.structure.spi.DeploymentUnit;
+import org.jboss.switchboard.impl.JndiEnvironmentProcessor;
+import org.jboss.switchboard.impl.ResourceProviderRegistry;
 
 /**
- * A {@link ResourceProvider} is responsible for resolving a {@link Resource}
- * from a given <code>context</code> and a {@link EnvironmentEntryType}
- * 
- *  <p>
- *  Typically
+ * MCBasedJndiEnvironmentProcessor
  *
- * @param C The context which will be passed to the {@link ResourceProvider} during
- *          {@link Resource} resolution. Typically, the context is a deployment unit
- *          
- * @param T The type of {@link EnvironmentEntryType}
- *                   
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public interface ResourceProvider<C, T extends EnvironmentEntryType>
+public class MCBasedJndiEnvironmentProcessor extends JndiEnvironmentProcessor<DeploymentUnit>
 {
-   
-   /**
-    * Returns a {@link Resource} for the passed context and {@link EnvironmentEntryType}
-    * 
-    * @param context The context
-    * @param type The type of environment entry
-    * @return
-    */
-   Resource provide(C context, T type);
-   
-   
-   
+
+   public MCBasedJndiEnvironmentProcessor(ResourceProviderRegistry<DeploymentUnit> registry)
+   {
+      super(registry);
+   }
+
 }

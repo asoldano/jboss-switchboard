@@ -19,35 +19,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.spi;
+package org.jboss.switchboard.mc.resource;
+
+import org.jboss.switchboard.spi.Resource;
 
 /**
- * A {@link ResourceProvider} is responsible for resolving a {@link Resource}
- * from a given <code>context</code> and a {@link EnvironmentEntryType}
- * 
- *  <p>
- *  Typically
+ * EnvEntryResource
  *
- * @param C The context which will be passed to the {@link ResourceProvider} during
- *          {@link Resource} resolution. Typically, the context is a deployment unit
- *          
- * @param T The type of {@link EnvironmentEntryType}
- *                   
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public interface ResourceProvider<C, T extends EnvironmentEntryType>
+public class IndependentResource implements Resource
 {
+
+   private Object target;
    
-   /**
-    * Returns a {@link Resource} for the passed context and {@link EnvironmentEntryType}
-    * 
-    * @param context The context
-    * @param type The type of environment entry
-    * @return
-    */
-   Resource provide(C context, T type);
+   public IndependentResource(Object target)
+   {
+      this.target = target;
+   }
    
-   
-   
+   @Override
+   public Object getDependency()
+   {
+      return null;
+   }
+
+   @Override
+   public Object getTarget()
+   {
+      return this.target;
+   }
+
 }

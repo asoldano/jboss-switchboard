@@ -24,7 +24,6 @@ package org.jboss.switchboard.mc.deployer;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import org.jboss.beans.metadata.api.annotations.Inject;
 import org.jboss.beans.metadata.plugins.AbstractDependencyMetaData;
@@ -38,9 +37,12 @@ import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.Environment;
 import org.jboss.reloaded.naming.deployers.javaee.JavaEEComponentInformer;
 import org.jboss.reloaded.naming.spi.JavaEEComponent;
+import org.jboss.reloaded.naming.spi.JavaEEModule;
 import org.jboss.switchboard.impl.ENCOperator;
 import org.jboss.switchboard.impl.JndiEnvironmentProcessor;
 import org.jboss.switchboard.jbmeta.javaee.environment.JndiEnvironmentMetadata;
+import org.jboss.switchboard.mc.SwitchBoardImpl;
+import org.jboss.switchboard.spi.Barrier;
 import org.jboss.switchboard.spi.JndiEnvironment;
 import org.jboss.switchboard.spi.Resource;
 
@@ -54,11 +56,11 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
 {
    /** Logger */
    private static Logger logger = Logger.getLogger(AbstractENCOperatorDeployer.class);
-   
+
    private JavaEEComponentInformer informer;
 
    private JndiEnvironmentProcessor<DeploymentUnit> jndiEnvProcessor;
-   
+
    public AbstractENCOperatorDeployer(JavaEEComponentInformer informer)
    {
       this.informer = informer;
@@ -70,7 +72,7 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
    {
       this.jndiEnvProcessor = processor;
    }
-   
+
    protected String getApplicationName(DeploymentUnit deploymentUnit)
    {
       return informer.getApplicationName(deploymentUnit);
@@ -94,27 +96,53 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
          JndiEnvironment jndiEnv = this.convert(env);
          resources.putAll(this.jndiEnvProcessor.process(unit, jndiEnv));
       }
-      ENCOperator encOperator = new ENCOperator(resources);
-      this.createAndAttachBMD(unit, encOperator);
+      if (resources.isEmpty())
+      {
+         return;
+      }
+      // A ENCOperator might already exist for the unit. For example,
+      // for EJBs and servlets deployed in a single .war (component), there will be 
+      // a ENCOperator which might have been created and added when processing JBossMetaData (for EJBs)
+      // and now we might be processing JBossWebMetaData (for servlets), which both share the same
+      // (JavaEE)component.  
+      Barrier switchboard = unit.getAttachment(Barrier.class);
+      if (switchboard == null)
+      {
+         // create a new one and attach it to unit
+         ENCOperator encOperator = new ENCOperator(resources);
+         this.createAndAttachBMD(unit, encOperator);
+      }
+      else
+      {
+         // HACK! 
+         // TODO: Think about a better way of doing this (maybe making available the methods in Barrier)
+         if (switchboard instanceof ENCOperator)
+         {
+            ENCOperator encOperator = (ENCOperator) switchboard;
+            encOperator.addENCBinding(resources);
+         }
+      }
    }
 
    private JndiEnvironment convert(Environment environment)
    {
       return new JndiEnvironmentMetadata(environment);
    }
-   
+
    private void createAndAttachBMD(DeploymentUnit unit, ENCOperator encOperator)
    {
-      String mcBeanName = this.getENCOperatorMCBeanName(unit);
-      BeanMetaDataBuilder builder = BeanMetaDataBuilderFactory.createBuilder(mcBeanName, ENCOperator.class.getName());
+      String mcBeanName = this.getSwitchBoardMCBeanName(unit);
+      SwitchBoardImpl switchBoard = new SwitchBoardImpl(mcBeanName, encOperator);
+      BeanMetaDataBuilder builder = BeanMetaDataBuilderFactory.createBuilder(mcBeanName, SwitchBoardImpl.class.getName());
+      builder.setConstructorValue(switchBoard);
 
-      builder.setConstructorValue(encOperator);
+      String encCtxMCBeanName = this.getENCContextMCBeanName(unit);
+      AbstractInjectionValueMetaData javaeeComponentInjection = new AbstractInjectionValueMetaData(encCtxMCBeanName,
+            "context");
+      builder.addPropertyMetaData("context", javaeeComponentInjection);
 
-      String javaeeCompMCBeanName = this.getJavaEEComponentMCBeanName(unit); 
-      AbstractInjectionValueMetaData javaeeComponentInjection = new AbstractInjectionValueMetaData(javaeeCompMCBeanName);
-      builder.addPropertyMetaData("javaEEComponent", javaeeComponentInjection);
-      
-      logger.debug("Installing ENCOperator: " + mcBeanName + " for unit: " + unit.getSimpleName() + " with dependencies: ");
+      logger.debug("Installing SwitchBoard: " + mcBeanName + " for unit: " + unit.getSimpleName()
+            + " with dependencies: ");
       for (Resource encBinding : encOperator.getENCBindings().values())
       {
          Object dependency = encBinding.getDependency();
@@ -129,9 +157,9 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
 
    }
 
-   private String getENCOperatorMCBeanName(DeploymentUnit unit)
+   private String getSwitchBoardMCBeanName(DeploymentUnit unit)
    {
-      StringBuilder sb = new StringBuilder("jboss-switchboard-encoperator:");
+      StringBuilder sb = new StringBuilder("jboss-switchboard:");
       String appName = this.getApplicationName(unit);
       if (appName != null)
       {
@@ -141,29 +169,26 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
       String moduleName = this.getModuleName(unit);
       sb.append("module=");
       sb.append(moduleName);
-      String componentName = this.getComponentName(unit);
-      sb.append("component=");
-      sb.append(componentName);
-      // there can be multiple ENCOperators for a single component. For example,
-      // for EJBs and servlets deployed in a single .war (component), there will be 
-      // 2 ENCOperators - one for the EJBs and one for the servlets - both operating on
-      // the same (JavaEE)component. Hence, a UUID to uniquely distinguish the ENCOperator 
-      sb.append("id=");
-      sb.append(UUID.randomUUID().toString());
+      if (this.informer.isJavaEEComponent(unit))
+      {
+         String componentName = this.getComponentName(unit);
+         sb.append("name=");
+         sb.append(componentName);
+      }
 
       return sb.toString();
    }
 
    /**
-    * Returns the {@link JavaEEComponent} MC bean name
+    * Returns the  MC bean name of either {@link JavaEEComponent} or a {@link JavaEEModule}
+    * depending on the deployment unit
     * @param deploymentUnit
     * @return
     */
-   private String getJavaEEComponentMCBeanName(DeploymentUnit deploymentUnit)
+   private String getENCContextMCBeanName(DeploymentUnit deploymentUnit)
    {
       String applicationName = this.getApplicationName(deploymentUnit);
       String moduleName = this.getModuleName(deploymentUnit);
-      String componentName = this.getComponentName(deploymentUnit);
 
       final StringBuilder builder = new StringBuilder("jboss.naming:");
       if (applicationName != null)
@@ -171,8 +196,9 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
          builder.append("application=").append(applicationName).append(",");
       }
       builder.append("module=").append(moduleName);
-      if (componentName != null)
+      if (this.informer.isJavaEEComponent(deploymentUnit))
       {
+         String componentName = this.getComponentName(deploymentUnit);
          builder.append(",component=").append(componentName);
       }
       return builder.toString();

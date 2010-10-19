@@ -19,35 +19,51 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.spi;
+package org.jboss.switchboard.mc;
+
+import javax.naming.Context;
+import javax.naming.NamingException;
+
+import org.jboss.switchboard.impl.ENCOperator;
+import org.jboss.switchboard.spi.Barrier;
 
 /**
- * A {@link ResourceProvider} is responsible for resolving a {@link Resource}
- * from a given <code>context</code> and a {@link EnvironmentEntryType}
- * 
- *  <p>
- *  Typically
+ * SwitchBoardImpl
  *
- * @param C The context which will be passed to the {@link ResourceProvider} during
- *          {@link Resource} resolution. Typically, the context is a deployment unit
- *          
- * @param T The type of {@link EnvironmentEntryType}
- *                   
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public interface ResourceProvider<C, T extends EnvironmentEntryType>
+public class SwitchBoardImpl implements Barrier
 {
+
+   private String id;
    
-   /**
-    * Returns a {@link Resource} for the passed context and {@link EnvironmentEntryType}
-    * 
-    * @param context The context
-    * @param type The type of environment entry
-    * @return
-    */
-   Resource provide(C context, T type);
+   private ENCOperator encOperator;
    
+   public SwitchBoardImpl(String barrierId, ENCOperator encOperator)
+   {
+      this.id = barrierId;
+      this.encOperator = encOperator;
+   }
    
+   public void start() throws NamingException
+   {
+      this.encOperator.bind();
+   }
    
+   public void stop() throws NamingException
+   {
+      this.encOperator.unbind();
+   }
+   
+   public void setContext(Context ctx)
+   {
+      this.encOperator.setContext(ctx);
+   }
+   
+   @Override
+   public String getId()
+   {
+      return this.id;
+   }
 }

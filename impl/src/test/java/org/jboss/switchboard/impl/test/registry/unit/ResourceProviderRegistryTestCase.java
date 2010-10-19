@@ -28,6 +28,7 @@ import org.jboss.switchboard.impl.test.common.DummyEJBReferenceProvider;
 import org.jboss.switchboard.impl.test.common.DummyEJBReferenceType;
 import org.jboss.switchboard.impl.test.common.DummyPersistenceContextProvider;
 import org.jboss.switchboard.impl.test.common.DummyPersistenceContextType;
+import org.jboss.switchboard.impl.test.common.EjbRefType;
 import org.jboss.switchboard.spi.EnvironmentEntryType;
 import org.jboss.switchboard.spi.ResourceProvider;
 import org.junit.Before;
@@ -78,6 +79,7 @@ public class ResourceProviderRegistryTestCase
       // test a non-existent provider type
       ResourceProvider<String, ? extends EnvironmentEntryType> nonExistentProvider = this.registry.getResourceProvider(EnvironmentEntryType.class);
       Assert.assertNull("(Unexpectedly) found a provider for type " +  EnvironmentEntryType.class, nonExistentProvider);
+      
       
    }
    

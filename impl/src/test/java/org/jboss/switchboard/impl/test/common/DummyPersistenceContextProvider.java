@@ -39,4 +39,5 @@ public class DummyPersistenceContextProvider<C> implements ResourceProvider<C, D
       return new DummyResource();
    }
 
+  
 }

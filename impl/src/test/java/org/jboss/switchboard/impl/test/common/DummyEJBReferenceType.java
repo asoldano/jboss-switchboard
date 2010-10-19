@@ -21,7 +21,6 @@
  */
 package org.jboss.switchboard.impl.test.common;
 
-import org.jboss.switchboard.spi.EnvironmentEntryType;
 
 /**
  * DummyEJBReferenceType
@@ -29,7 +28,7 @@ import org.jboss.switchboard.spi.EnvironmentEntryType;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class DummyEJBReferenceType implements EnvironmentEntryType
+public class DummyEJBReferenceType implements EjbRefType
 {
 
    private String encName;

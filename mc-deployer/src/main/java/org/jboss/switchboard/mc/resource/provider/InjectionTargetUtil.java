@@ -19,26 +19,45 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.impl.test.common;
+package org.jboss.switchboard.mc.resource.provider;
 
-import org.jboss.switchboard.spi.Resource;
-import org.jboss.switchboard.spi.ResourceProvider;
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Field;
+
+import org.jboss.switchboard.javaee.environment.InjectionTarget;
 
 /**
- * DummyEJBReferenceProvder
+ * InjectionTargetUtil
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class DummyEJBReferenceProvider<C> implements ResourceProvider<C, EjbRefType>
+public class InjectionTargetUtil
 {
 
-   @Override
-   public Resource provide(C context, EjbRefType type)
+   public static AccessibleObject findInjectionTarget(ClassLoader loader, InjectionTarget target)
    {
-      return new DummyResource();
-   }
-   
-  
+      Class<?> clazz = null;
+      try
+      {
+         clazz = loader.loadClass(target.getTargetClass());
+      }
+      catch (ClassNotFoundException e)
+      {
+         throw new RuntimeException("<injection-target> class: " + target.getTargetClass() + " was not found in deployment");
+      }
 
+      for (Field field : clazz.getDeclaredFields())
+      {
+         if (target.getTargetName().equals(field.getName())) return field;
+      }
+
+      for (java.lang.reflect.Method method : clazz.getDeclaredMethods())
+      {
+         if (method.getName().equals(target.getTargetName())) return method;
+      }
+
+      throw new RuntimeException("<injection-target> could not be found: " + target.getTargetClass() + "." + target.getTargetName());
+
+   }
 }

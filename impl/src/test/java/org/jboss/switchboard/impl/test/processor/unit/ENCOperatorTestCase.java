@@ -21,9 +21,6 @@
  */
 package org.jboss.switchboard.impl.test.processor.unit;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -35,7 +32,6 @@ import javax.naming.NamingException;
 
 import junit.framework.Assert;
 
-import org.jboss.reloaded.naming.spi.JavaEEComponent;
 import org.jboss.switchboard.impl.ENCOperator;
 import org.jboss.switchboard.impl.test.common.DummyResource;
 import org.jboss.switchboard.spi.Resource;
@@ -81,10 +77,8 @@ public class ENCOperatorTestCase
    @Test
    public void testBindings() throws Exception
    {
-      // create a mock java comp
-      JavaEEComponent mockJavaEEComp = mock(JavaEEComponent.class);
+      // create a jndi context
       Context jndiCtx = this.getLocalContext();
-      when(mockJavaEEComp.getContext()).thenReturn(jndiCtx);
 
       // create the resources to be bound
       Map<String, Resource> resources = new HashMap<String, Resource>();
@@ -97,7 +91,7 @@ public class ENCOperatorTestCase
       resources.put("pc", dummyPersistenceContextResource);
 
       // bind the resources
-      ENCOperator operator = new ENCOperator(mockJavaEEComp, resources);
+      ENCOperator operator = new ENCOperator(jndiCtx, resources);
       operator.bind();
 
       // now lookup the resources and make sure they are available
