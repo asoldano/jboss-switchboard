@@ -39,5 +39,10 @@ public class DummyPersistenceContextProvider<C> implements ResourceProvider<C, D
       return new DummyResource();
    }
 
+   @Override
+   public Class<DummyPersistenceContextType> getEnvironmentEntryType()
+   {
+      return DummyPersistenceContextType.class;
+   }
   
 }

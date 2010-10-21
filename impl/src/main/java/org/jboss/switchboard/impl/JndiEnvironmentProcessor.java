@@ -35,17 +35,17 @@ import org.jboss.switchboard.spi.ResourceProvider;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class JndiEnvironmentProcessor<C>
+public class JndiEnvironmentProcessor
 {
 
-   private ResourceProviderRegistry<C> registry;
+   private ResourceProviderRegistry registry;
    
-   public JndiEnvironmentProcessor(ResourceProviderRegistry<C> registry)
+   public JndiEnvironmentProcessor(ResourceProviderRegistry registry)
    {
       this.registry = registry;
    }
    
-   public Map<String, Resource> process(C context, JndiEnvironment environment)
+   public <C> Map<String, Resource> process(C context, JndiEnvironment environment)
    {
       Map<String, Resource> resources = new HashMap<String, Resource>();
       for (EnvironmentEntryType type : environment.getEntries())

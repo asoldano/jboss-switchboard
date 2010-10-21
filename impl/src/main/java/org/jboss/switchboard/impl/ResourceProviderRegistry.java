@@ -21,9 +21,6 @@
  */
 package org.jboss.switchboard.impl;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,38 +34,38 @@ import org.jboss.switchboard.spi.ResourceProvider;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class ResourceProviderRegistry<C>
+public class ResourceProviderRegistry
 {
 
-   private Map<Class<?>, ResourceProvider<C, ? extends EnvironmentEntryType>> bindingProviders = new ConcurrentHashMap<Class<?>, ResourceProvider<C, ? extends EnvironmentEntryType>>();
+   private Map<Class<?>, ResourceProvider<?, ? extends EnvironmentEntryType>> bindingProviders = new ConcurrentHashMap<Class<?>, ResourceProvider<?, ? extends EnvironmentEntryType>>();
 
-   public void registerProviders(Collection<ResourceProvider<C, ? extends EnvironmentEntryType>> providers)
+   public void registerProviders(Collection<ResourceProvider<?, ? extends EnvironmentEntryType>> providers)
    {
       if (providers == null)
       {
          throw new IllegalArgumentException("ENCBindingProvider(s) cannot be null during registration");
       }
-      for (ResourceProvider<C, ?> provider : providers)
+      for (ResourceProvider<?, ?> provider : providers)
       {
          this.registerProvider(provider);
       }
    }
 
-   public void registerProvider(ResourceProvider<C, ? extends EnvironmentEntryType> provider)
+   public void registerProvider(ResourceProvider<?, ? extends EnvironmentEntryType> provider)
    {
       if (provider == null)
       {
          throw new IllegalArgumentException("ENCBindingProvider cannot be null during registration");
       }
-      Class<?> type = this.getProviderEnvEntryType(provider);
+      Class<? extends EnvironmentEntryType> type = provider.getEnvironmentEntryType(); 
       this.bindingProviders.put(type, provider);
    }
 
-   public ResourceProvider<C, ? extends EnvironmentEntryType> getResourceProvider(
+   public ResourceProvider<?, ? extends EnvironmentEntryType> getResourceProvider(
          Class<? extends EnvironmentEntryType> type)
    {
 
-      ResourceProvider<C, ? extends EnvironmentEntryType> provider = this.bindingProviders.get(type);
+      ResourceProvider<?, ? extends EnvironmentEntryType> provider = this.bindingProviders.get(type);
       if (provider != null)
       {
          return provider;
@@ -103,44 +100,65 @@ public class ResourceProviderRegistry<C>
    }
 
    
-
-   /**
-    * Determine the Processor<T, ?> T generic processorType class.
-    * 
-    * @param processor
-    * @return The Class for the T parameter type.
-    */
-   private Class<?> getProviderEnvEntryType(ResourceProvider<C, ? extends EnvironmentEntryType> provider)
-   {
-      // Find the ResourceProvider<C, T extends EnvironmentEntryType> interface
-      Type[] interfaces = provider.getClass().getGenericInterfaces();
-      Type resourceProviderIntf = null;
-      for (Type t : interfaces)
-      {
-         ParameterizedType pt = (ParameterizedType) t;
-         Type rawType = pt.getRawType();
-         if ((rawType instanceof Class) && ((Class<?>) rawType).getName().equals(ResourceProvider.class.getName()))
-         {
-            resourceProviderIntf = t;
-            break;
-         }
-      }
-      if (resourceProviderIntf == null)
-         throw new IllegalStateException("No generic Processor interface found on: " + provider);
-
-      // Get the type of the T parameter
-      ParameterizedType pt = (ParameterizedType) resourceProviderIntf;
-      Type envEntryTypeParameter = pt.getActualTypeArguments()[1];
-      Class<?> evnEntryType = null;
-      if (envEntryTypeParameter instanceof Class)
-         evnEntryType = (Class<?>) envEntryTypeParameter;
-      else if (envEntryTypeParameter instanceof TypeVariable)
-      {
-         TypeVariable tv = (TypeVariable) envEntryTypeParameter;
-         evnEntryType = (Class<?>) tv.getBounds()[0];
-      }
-
-      return evnEntryType;
-   }
-
+//
+//   /**
+//    * Determine the Processor<T, ?> T generic processorType class.
+//    * 
+//    * @param processor
+//    * @return The Class for the T parameter type.
+//    */
+//   private Class<?> getProviderEnvEntryType(ResourceProvider<C, ? extends EnvironmentEntryType> provider)
+//   {
+//      // Find the ResourceProvider<C, T extends EnvironmentEntryType> interface
+////      Type[] interfaces = provider.getClass().getGenericInterfaces();
+////      Type resourceProviderIntf = null;
+////      for (Type t : interfaces)
+////      {
+////         ParameterizedType pt = (ParameterizedType) t;
+////         Type rawType = pt.getRawType();
+////         if ((rawType instanceof Class) && ResourceProvider.class.isAssignableFrom((Class<?>) rawType))
+////         {
+////            resourceProviderIntf = t;
+////            break;
+////         }
+////      }
+//      ParameterizedType resourceProviderIntf = this.getResourceProviderType(provider.getClass());
+//      if (resourceProviderIntf == null)
+//         throw new IllegalStateException("No generic Processor interface found on: " + provider);
+//
+//      // Get the type of the T parameter
+//      ParameterizedType pt = (ParameterizedType) resourceProviderIntf;
+//      Type envEntryTypeParameter = pt.getActualTypeArguments()[1];
+//      Class<?> evnEntryType = null;
+//      if (envEntryTypeParameter instanceof Class)
+//         evnEntryType = (Class<?>) envEntryTypeParameter;
+//      else if (envEntryTypeParameter instanceof TypeVariable)
+//      {
+//         TypeVariable tv = (TypeVariable) envEntryTypeParameter;
+//         evnEntryType = (Class<?>) tv.getBounds()[0];
+//      }
+//
+//      return evnEntryType;
+//   }
+//
+//   private ParameterizedType getResourceProviderType(Class<?> klass)
+//   {
+//      // Find the ResourceProvider<C, T extends EnvironmentEntryType> interface
+//      Type[] interfaces = klass.getGenericInterfaces();
+//      for (Type t : interfaces)
+//      {
+//         ParameterizedType pt = (ParameterizedType) t;
+//         Type rawType = pt.getRawType();
+//         if ((rawType instanceof Class) && ResourceProvider.class.isAssignableFrom((Class<?>) rawType))
+//         {
+//            if (((Class<?>)rawType).getName().equals(ResourceProvider.class.getName()))
+//            {
+//               return pt;
+//            }
+//            return this.getResourceProviderType((Class<?>) rawType);
+//         }
+//      }
+//      return null;
+//   }
+   
 }

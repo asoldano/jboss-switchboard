@@ -61,7 +61,7 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
 
    protected JavaEEComponentInformer informer;
 
-   protected JndiEnvironmentProcessor<DeploymentUnit> jndiEnvProcessor;
+   protected JndiEnvironmentProcessor jndiEnvProcessor;
 
    public AbstractENCOperatorDeployer(JavaEEComponentInformer informer)
    {
@@ -70,7 +70,7 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
    }
 
    @Inject
-   public void setJNDIEnvironmentProcessor(JndiEnvironmentProcessor<DeploymentUnit> processor)
+   public void setJNDIEnvironmentProcessor(JndiEnvironmentProcessor processor)
    {
       this.jndiEnvProcessor = processor;
    }

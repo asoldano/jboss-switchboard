@@ -69,7 +69,11 @@ public class EnvEntryResourceProvider implements MCBasedResourceProvider<SimpleE
    }
    
    
-
+   @Override
+   public Class<SimpleEnvironmentEntryType> getEnvironmentEntryType()
+   {
+      return SimpleEnvironmentEntryType.class;
+   }
    /**
     * Creates and returns the env-entry-value represented by the {@link SimpleEnvironmentEntryType#getValue()}
     * 

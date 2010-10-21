@@ -49,5 +49,7 @@ public interface ResourceProvider<C, T extends EnvironmentEntryType>
    Resource provide(C context, T type);
    
    
+   Class<T> getEnvironmentEntryType();
+   
    
 }

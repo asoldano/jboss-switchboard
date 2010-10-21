@@ -21,6 +21,8 @@
  */
 package org.jboss.switchboard.impl.test.registry.unit;
 
+import java.util.Map;
+
 import junit.framework.Assert;
 
 import org.jboss.switchboard.impl.ResourceProviderRegistry;
@@ -28,10 +30,11 @@ import org.jboss.switchboard.impl.test.common.DummyEJBReferenceProvider;
 import org.jboss.switchboard.impl.test.common.DummyEJBReferenceType;
 import org.jboss.switchboard.impl.test.common.DummyPersistenceContextProvider;
 import org.jboss.switchboard.impl.test.common.DummyPersistenceContextType;
-import org.jboss.switchboard.impl.test.common.EjbRefType;
+import org.jboss.switchboard.impl.test.common.DummyResource;
+import org.jboss.switchboard.impl.test.common.MapBasedResourceProvider;
 import org.jboss.switchboard.spi.EnvironmentEntryType;
+import org.jboss.switchboard.spi.Resource;
 import org.jboss.switchboard.spi.ResourceProvider;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -43,13 +46,6 @@ import org.junit.Test;
 public class ResourceProviderRegistryTestCase
 {
 
-   private ResourceProviderRegistry<String> registry;
-   
-   @Before
-   public void beforeTest()
-   {
-      this.registry = new ResourceProviderRegistry<String>();
-   }
    
    /**
     * Test that the {@link ResourceProviderRegistry#getResourceProvider(Class)} returns the correct
@@ -58,31 +54,59 @@ public class ResourceProviderRegistryTestCase
    @Test
    public void testRegister()
    {
+     ResourceProviderRegistry registry = new ResourceProviderRegistry();
+
       // register EJB ref provider
-      ResourceProvider<String, ? extends EnvironmentEntryType> ejbRefProvider = new DummyEJBReferenceProvider<String>();
+      ResourceProvider<?, ? extends EnvironmentEntryType> ejbRefProvider = new DummyEJBReferenceProvider<String>();
       registry.registerProvider(ejbRefProvider);
       
       // register PC ref provider
-      ResourceProvider<String, ? extends EnvironmentEntryType> pcRefProvider = new DummyPersistenceContextProvider<String>();
+      ResourceProvider<?, ? extends EnvironmentEntryType> pcRefProvider = new DummyPersistenceContextProvider<String>();
       registry.registerProvider(pcRefProvider);
       
       // test EJB ref provider
-      ResourceProvider<String, ? extends EnvironmentEntryType> provider = this.registry.getResourceProvider(DummyEJBReferenceType.class);
+      ResourceProvider<?, ? extends EnvironmentEntryType> provider = registry.getResourceProvider(DummyEJBReferenceType.class);
       Assert.assertNotNull("Could not find a provider for " +  DummyEJBReferenceType.class, provider);
       Assert.assertEquals("Unexpected resource provider for " + DummyEJBReferenceType.class, ejbRefProvider, provider);
       
       // test PC ref provider
-      ResourceProvider<String, ? extends EnvironmentEntryType> anotherProvider = this.registry.getResourceProvider(DummyPersistenceContextType.class);
+      ResourceProvider<?, ? extends EnvironmentEntryType> anotherProvider = registry.getResourceProvider(DummyPersistenceContextType.class);
       Assert.assertNotNull("Could not find a provider for " +  DummyPersistenceContextType.class, anotherProvider);
       Assert.assertEquals("Unexpected resource provider for " + DummyPersistenceContextType.class, pcRefProvider, anotherProvider);
       
       // test a non-existent provider type
-      ResourceProvider<String, ? extends EnvironmentEntryType> nonExistentProvider = this.registry.getResourceProvider(EnvironmentEntryType.class);
+      ResourceProvider<?, ? extends EnvironmentEntryType> nonExistentProvider = registry.getResourceProvider(EnvironmentEntryType.class);
       Assert.assertNull("(Unexpectedly) found a provider for type " +  EnvironmentEntryType.class, nonExistentProvider);
       
       
    }
    
-   
+   @Test
+   public void testGetProvider()
+   {
+      MapBasedResourceProvider<? extends EnvironmentEntryType> mapBasedProvider = new MapBasedResourceProvider<DummyEJBReferenceType>()
+      {
+
+         @Override
+         public Resource provide(Map<String, String> context, DummyEJBReferenceType type)
+         {
+            return new DummyResource();
+         }
+         
+         @Override
+         public Class<DummyEJBReferenceType> getEnvironmentEntryType()
+         {
+            return DummyEJBReferenceType.class;
+         }
+      }; 
+      ResourceProviderRegistry registry = new ResourceProviderRegistry();
+      registry.registerProvider(mapBasedProvider);
+      
+      // test EJB ref provider
+      ResourceProvider<?, ? extends EnvironmentEntryType> provider = registry.getResourceProvider(DummyEJBReferenceType.class);
+      Assert.assertNotNull("Could not find a provider for " +  DummyEJBReferenceType.class, provider);
+      Assert.assertEquals("Unexpected resource provider for " + DummyEJBReferenceType.class, mapBasedProvider, provider);
+
+   }
    
 }

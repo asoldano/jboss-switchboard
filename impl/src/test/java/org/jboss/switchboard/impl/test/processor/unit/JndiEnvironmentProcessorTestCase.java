@@ -55,7 +55,7 @@ public class JndiEnvironmentProcessorTestCase
    @Test
    public void testProcessor()
    {
-      ResourceProviderRegistry<String> registry = new ResourceProviderRegistry<String>();
+      ResourceProviderRegistry registry = new ResourceProviderRegistry();
       // register EJB ref provider
       ResourceProvider<String, ? extends EnvironmentEntryType> ejbRefProvider = new DummyEJBReferenceProvider<String>();
       registry.registerProvider(ejbRefProvider);
@@ -75,7 +75,7 @@ public class JndiEnvironmentProcessorTestCase
       JndiEnvironment environment = new DummyJndiEnvironment(entries);
 
       // create the processor
-      JndiEnvironmentProcessor<String> processor =  new JndiEnvironmentProcessor<String>(registry);
+      JndiEnvironmentProcessor processor =  new JndiEnvironmentProcessor(registry);
       // now process and create the resource(s)
       Map<String, Resource> resources = processor.process(new String("Dummy context"), environment);
       

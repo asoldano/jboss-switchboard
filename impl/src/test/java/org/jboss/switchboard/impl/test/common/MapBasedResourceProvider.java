@@ -19,24 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.mc.resource;
+package org.jboss.switchboard.impl.test.common;
 
-import org.jboss.deployers.structure.spi.DeploymentUnit;
-import org.jboss.switchboard.impl.JndiEnvironmentProcessor;
-import org.jboss.switchboard.impl.ResourceProviderRegistry;
+import java.util.Map;
+
+import org.jboss.switchboard.spi.EnvironmentEntryType;
+import org.jboss.switchboard.spi.ResourceProvider;
 
 /**
- * MCBasedJndiEnvironmentProcessor
+ * MapBasedResourceProvider
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class MCBasedJndiEnvironmentProcessor extends JndiEnvironmentProcessor<DeploymentUnit>
+public interface MapBasedResourceProvider<T extends EnvironmentEntryType> extends ResourceProvider<Map<String, String>, T>
 {
-
-   public MCBasedJndiEnvironmentProcessor(ResourceProviderRegistry<DeploymentUnit> registry)
-   {
-      super(registry);
-   }
 
 }

@@ -2,13 +2,13 @@
 <deployment xmlns="urn:jboss:bean-deployer:2.0">
 
     <!-- Resource provider registry -->
-    <bean name="org.jboss.switchboard.ResourceProviderRegistry" class="org.jboss.switchboard.mc.resource.provider.MCBasedResourceProviderRegistry">
+    <bean name="org.jboss.switchboard.ResourceProviderRegistry" class="org.jboss.switchboard.impl.ResourceProviderRegistry">
         <!-- Register providers dynamically -->
         <incallback method="registerProvider"/>
     </bean>
     
     <!--  JNDI environment processor -->
-    <bean name="org.jboss.switchboard.JndiEnvironmentProcessor" class="org.jboss.switchboard.mc.resource.MCBasedJndiEnvironmentProcessor">
+    <bean name="org.jboss.switchboard.JndiEnvironmentProcessor" class="org.jboss.switchboard.impl.JndiEnvironmentProcessor">
         <constructor><parameter><inject bean="org.jboss.switchboard.ResourceProviderRegistry"/></parameter></constructor>
     </bean>
     

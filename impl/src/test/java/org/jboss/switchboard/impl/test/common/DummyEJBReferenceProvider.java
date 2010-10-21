@@ -38,7 +38,11 @@ public class DummyEJBReferenceProvider<C> implements ResourceProvider<C, EjbRefT
    {
       return new DummyResource();
    }
-   
-  
+
+   @Override
+   public Class<EjbRefType> getEnvironmentEntryType()
+   {
+      return EjbRefType.class;
+   }
 
 }
