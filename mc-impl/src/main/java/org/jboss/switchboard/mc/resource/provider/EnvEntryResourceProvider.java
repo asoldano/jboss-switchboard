@@ -31,6 +31,7 @@ import org.jboss.logging.Logger;
 import org.jboss.switchboard.javaee.environment.InjectionTarget;
 import org.jboss.switchboard.javaee.environment.SimpleEnvironmentEntryType;
 import org.jboss.switchboard.mc.resource.IndependentResource;
+import org.jboss.switchboard.mc.spi.MCBasedResourceProvider;
 import org.jboss.switchboard.spi.Resource;
 import org.jboss.switchboard.spi.ResourceProvider;
 
@@ -41,7 +42,7 @@ import org.jboss.switchboard.spi.ResourceProvider;
  * @version $Revision: $
  * 
  */
-public class EnvEntryResourceProvider implements ResourceProvider<DeploymentUnit, SimpleEnvironmentEntryType>
+public class EnvEntryResourceProvider implements MCBasedResourceProvider<SimpleEnvironmentEntryType>
 {
 
    /**

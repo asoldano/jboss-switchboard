@@ -33,8 +33,8 @@
       <module>impl</module>
       <module>javaee</module>
       <module>jbmeta-javaee</module>
-      <module>mc-int</module>
-      <module>mc-deployer</module>
+      <module>mc-spi</module>
+      <module>mc-impl</module>
    </modules>
 
    <!-- Build -->

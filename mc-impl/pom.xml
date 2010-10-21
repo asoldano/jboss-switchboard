@@ -11,10 +11,10 @@
     </parent>
 
     <groupId>org.jboss.switchboard</groupId>
-    <artifactId>jboss-switchboard-mc-deployer</artifactId>
+    <artifactId>jboss-switchboard-mc-impl</artifactId>
     <packaging>jar</packaging>
 
-    <name>JBoss Micro Container VDF integration for SwitchBoard component</name>
+    <name>JBoss Micro Container integration for SwitchBoard component</name>
     <url>http://www.jboss.org</url>
 
     <properties>
@@ -37,6 +37,12 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jboss-switchboard-impl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jboss-switchboard-mc-spi</artifactId>
             <version>${project.version}</version>
         </dependency>
 

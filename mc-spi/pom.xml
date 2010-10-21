@@ -11,10 +11,10 @@
    </parent>
 
    <groupId>org.jboss.switchboard</groupId>
-   <artifactId>jboss-switchboard-mc-int</artifactId>
+   <artifactId>jboss-switchboard-mc-spi</artifactId>
    <packaging>jar</packaging>
 
-   <name>JBoss Micro Container integration for SwitchBoard component</name>
+   <name>JBoss Micro Container SPI for SwitchBoard component</name>
    <url>http://www.jboss.org</url>
 
    <properties>
