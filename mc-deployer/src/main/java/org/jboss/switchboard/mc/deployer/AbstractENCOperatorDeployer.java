@@ -26,15 +26,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.beans.metadata.api.annotations.Inject;
-import org.jboss.beans.metadata.plugins.AbstractDependencyMetaData;
 import org.jboss.beans.metadata.plugins.AbstractInjectionValueMetaData;
 import org.jboss.beans.metadata.plugins.builder.BeanMetaDataBuilderFactory;
 import org.jboss.beans.metadata.spi.BeanMetaData;
+import org.jboss.beans.metadata.spi.DependencyMetaData;
 import org.jboss.beans.metadata.spi.builder.BeanMetaDataBuilder;
 import org.jboss.deployers.spi.deployer.helpers.AbstractRealDeployer;
 import org.jboss.deployers.structure.spi.DeploymentUnit;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.jboss.JBossMetaData;
 import org.jboss.metadata.javaee.spec.Environment;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.reloaded.naming.deployers.javaee.JavaEEComponentInformer;
 import org.jboss.reloaded.naming.spi.JavaEEComponent;
 import org.jboss.reloaded.naming.spi.JavaEEModule;
@@ -57,9 +59,9 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
    /** Logger */
    private static Logger logger = Logger.getLogger(AbstractENCOperatorDeployer.class);
 
-   private JavaEEComponentInformer informer;
+   protected JavaEEComponentInformer informer;
 
-   private JndiEnvironmentProcessor<DeploymentUnit> jndiEnvProcessor;
+   protected JndiEnvironmentProcessor<DeploymentUnit> jndiEnvProcessor;
 
    public AbstractENCOperatorDeployer(JavaEEComponentInformer informer)
    {
@@ -105,21 +107,25 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
       // a ENCOperator which might have been created and added when processing JBossMetaData (for EJBs)
       // and now we might be processing JBossWebMetaData (for servlets), which both share the same
       // (JavaEE)component.  
-      Barrier switchboard = unit.getAttachment(Barrier.class);
-      if (switchboard == null)
+      Barrier barrier = unit.getAttachment(Barrier.class);
+      if (barrier == null)
       {
          // create a new one and attach it to unit
          ENCOperator encOperator = new ENCOperator(resources);
-         this.createAndAttachBMD(unit, encOperator);
+         SwitchBoardImpl switchBoard = new SwitchBoardImpl(this.getSwitchBoardMCBeanName(unit), encOperator);
+         this.attachBarrier(unit, switchBoard);
+         
+         BeanMetaData switchBoardBMD = this.createSwitchBoardBMD(unit, switchBoard);
+         this.attachSwitchBoardBMD(unit, switchBoardBMD);
       }
       else
       {
          // HACK! 
          // TODO: Think about a better way of doing this (maybe making available the methods in Barrier)
-         if (switchboard instanceof ENCOperator)
+         if (barrier instanceof SwitchBoardImpl)
          {
-            ENCOperator encOperator = (ENCOperator) switchboard;
-            encOperator.addENCBinding(resources);
+            SwitchBoardImpl switchboard = (SwitchBoardImpl) barrier;
+            switchboard.addENCBinding(resources);
          }
       }
    }
@@ -129,35 +135,54 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
       return new JndiEnvironmentMetadata(environment);
    }
 
-   private void createAndAttachBMD(DeploymentUnit unit, ENCOperator encOperator)
+   protected BeanMetaData createSwitchBoardBMD(DeploymentUnit unit, SwitchBoardImpl switchBoard)
    {
-      String mcBeanName = this.getSwitchBoardMCBeanName(unit);
-      SwitchBoardImpl switchBoard = new SwitchBoardImpl(mcBeanName, encOperator);
-      BeanMetaDataBuilder builder = BeanMetaDataBuilderFactory.createBuilder(mcBeanName, SwitchBoardImpl.class.getName());
+      //String mcBeanName = this.getSwitchBoardMCBeanName(unit);
+      String mcBeanName = switchBoard.getId();
+      BeanMetaDataBuilder builder = BeanMetaDataBuilderFactory.createBuilder(mcBeanName, switchBoard.getClass().getName());
       builder.setConstructorValue(switchBoard);
 
-      String encCtxMCBeanName = this.getENCContextMCBeanName(unit);
-      AbstractInjectionValueMetaData javaeeComponentInjection = new AbstractInjectionValueMetaData(encCtxMCBeanName,
-            "context");
-      builder.addPropertyMetaData("context", javaeeComponentInjection);
+//      String encCtxMCBeanName = this.getENCContextMCBeanName(unit);
+//      AbstractInjectionValueMetaData javaeeComponentInjection = new AbstractInjectionValueMetaData(encCtxMCBeanName,
+//            "context");
+      AbstractInjectionValueMetaData namingContextInjection = this.getNamingContextInjectionMetaData(unit);
+      builder.addPropertyMetaData("context", namingContextInjection);
 
       logger.debug("Installing SwitchBoard: " + mcBeanName + " for unit: " + unit.getSimpleName()
             + " with dependencies: ");
-      for (Resource encBinding : encOperator.getENCBindings().values())
+      for (DependencyMetaData dependency : switchBoard.getDependencies())
       {
-         Object dependency = encBinding.getDependency();
-         if (dependency != null)
-         {
             logger.debug(dependency);
-            AbstractDependencyMetaData mcDependency = new AbstractDependencyMetaData(dependency);
-            builder.addDependency(mcDependency);
-         }
+            builder.addDependency(dependency);
+         
       }
-      unit.addAttachment(BeanMetaData.class + ":" + mcBeanName, builder.getBeanMetaData());
-
+      return builder.getBeanMetaData();
+//      if(unit.isComponent())
+//      {
+//         unit.getParent().addAttachment(BeanMetaData.class + ":" + mcBeanName, builder.getBeanMetaData());
+//      }
+//      else
+//      {
+//         unit.addAttachment(BeanMetaData.class + ":" + mcBeanName, builder.getBeanMetaData());
+//      }
+//
+//      if (unit.isComponent() && this.isSharedENC(unit))
+//      {
+//         unit.getParent().addAttachment(Barrier.class, switchBoard);
+//      }
+//      else
+//      {
+//         unit.addAttachment(Barrier.class, switchBoard);
+//      }
    }
+   
+   protected abstract void attachSwitchBoardBMD(DeploymentUnit deploymentUnit, BeanMetaData switchBoardBMD);
+   
+   protected abstract void attachBarrier(DeploymentUnit deploymentUnit, Barrier switchBoard);
+   
+   protected abstract AbstractInjectionValueMetaData getNamingContextInjectionMetaData(DeploymentUnit deploymentUnit);
 
-   private String getSwitchBoardMCBeanName(DeploymentUnit unit)
+   protected String getSwitchBoardMCBeanName(DeploymentUnit unit)
    {
       StringBuilder sb = new StringBuilder("jboss-switchboard:");
       String appName = this.getApplicationName(unit);
@@ -165,6 +190,7 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
       {
          sb.append("appName=");
          sb.append(appName);
+         sb.append(",");
       }
       String moduleName = this.getModuleName(unit);
       sb.append("module=");
@@ -172,7 +198,7 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
       if (this.informer.isJavaEEComponent(unit))
       {
          String componentName = this.getComponentName(unit);
-         sb.append("name=");
+         sb.append(",name=");
          sb.append(componentName);
       }
 
@@ -196,11 +222,22 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
          builder.append("application=").append(applicationName).append(",");
       }
       builder.append("module=").append(moduleName);
-      if (this.informer.isJavaEEComponent(deploymentUnit))
+      if (this.informer.isJavaEEComponent(deploymentUnit) && !this.isSharedENC(deploymentUnit))
       {
          String componentName = this.getComponentName(deploymentUnit);
          builder.append(",component=").append(componentName);
       }
       return builder.toString();
+   }
+   
+   private boolean isSharedENC(DeploymentUnit deploymentUnit)
+   {
+      JBossMetaData jbossMetaData = deploymentUnit.getAttachment(JBossMetaData.class);
+      JBossWebMetaData jbosswebMetaData = deploymentUnit.getAttachment(JBossWebMetaData.class);
+      if (jbossMetaData != null && jbosswebMetaData != null)
+      {
+         return true;
+      }
+      return false;
    }
 }

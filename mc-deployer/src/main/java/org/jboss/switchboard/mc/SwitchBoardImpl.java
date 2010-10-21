@@ -21,11 +21,18 @@
  */
 package org.jboss.switchboard.mc;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+import org.jboss.beans.metadata.plugins.AbstractDependencyMetaData;
+import org.jboss.beans.metadata.spi.DependencyMetaData;
 import org.jboss.switchboard.impl.ENCOperator;
 import org.jboss.switchboard.spi.Barrier;
+import org.jboss.switchboard.spi.Resource;
 
 /**
  * SwitchBoardImpl
@@ -65,5 +72,25 @@ public class SwitchBoardImpl implements Barrier
    public String getId()
    {
       return this.id;
+   }
+   
+   public void addENCBinding(Map<String, Resource> resources)
+   {
+      this.encOperator.addENCBinding(resources);
+   }
+   
+   public Collection<DependencyMetaData> getDependencies()
+   {
+      Collection<DependencyMetaData> dependencies = new ArrayList<DependencyMetaData>();
+      for (Resource encBinding : encOperator.getENCBindings().values())
+      {
+         Object dependency = encBinding.getDependency();
+         if (dependency != null)
+         {
+            AbstractDependencyMetaData mcDependency = new AbstractDependencyMetaData(dependency);
+            dependencies.add(mcDependency);
+         }
+      }
+      return dependencies;
    }
 }
