@@ -110,50 +110,6 @@ public class EJBEnvironmentENCOperatorDeployer extends AbstractENCOperatorDeploy
       parentDU.addAttachment(BeanMetaData.class + ":" + switchBoardBMD.getName(), switchBoardBMD);
       
    }
-
-   @Override
-   protected AbstractInjectionValueMetaData getNamingContextInjectionMetaData(DeploymentUnit deploymentUnit)
-   {
-      String encCtxMCBeanName = this.getENCContextMCBeanName(deploymentUnit);
-      AbstractInjectionValueMetaData namingContextInjectionMetaData = new AbstractInjectionValueMetaData(encCtxMCBeanName,
-            "context");
-      return namingContextInjectionMetaData;
-   }
    
-   /**
-    * Returns the  MC bean name of either {@link JavaEEComponent} or a {@link JavaEEModule}
-    * depending on the deployment unit
-    * @param deploymentUnit
-    * @return
-    */
-   private String getENCContextMCBeanName(DeploymentUnit deploymentUnit)
-   {
-      String applicationName = this.getApplicationName(deploymentUnit);
-      String moduleName = this.getModuleName(deploymentUnit);
-
-      final StringBuilder builder = new StringBuilder("jboss.naming:");
-      if (applicationName != null)
-      {
-         builder.append("application=").append(applicationName).append(",");
-      }
-      builder.append("module=").append(moduleName);
-      if (!this.isSharedENC(deploymentUnit))
-      {
-         String componentName = this.getComponentName(deploymentUnit);
-         builder.append(",component=").append(componentName);
-      }
-      return builder.toString();
-   }
-   
-   private boolean isSharedENC(DeploymentUnit deploymentUnit)
-   {
-      JBossMetaData jbossMetaData = deploymentUnit.getAttachment(JBossMetaData.class);
-      JBossWebMetaData jbosswebMetaData = deploymentUnit.getAttachment(JBossWebMetaData.class);
-      if (jbossMetaData != null && jbosswebMetaData != null)
-      {
-         return true;
-      }
-      return false;
-   }
    
 }

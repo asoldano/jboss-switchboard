@@ -34,8 +34,12 @@ import org.jboss.beans.metadata.spi.builder.BeanMetaDataBuilder;
 import org.jboss.deployers.spi.deployer.helpers.AbstractRealDeployer;
 import org.jboss.deployers.structure.spi.DeploymentUnit;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.jboss.JBossMetaData;
 import org.jboss.metadata.javaee.spec.Environment;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.reloaded.naming.deployers.javaee.JavaEEComponentInformer;
+import org.jboss.reloaded.naming.spi.JavaEEComponent;
+import org.jboss.reloaded.naming.spi.JavaEEModule;
 import org.jboss.switchboard.impl.ENCOperator;
 import org.jboss.switchboard.impl.JndiEnvironmentProcessor;
 import org.jboss.switchboard.jbmeta.javaee.environment.JndiEnvironmentMetadata;
@@ -173,7 +177,7 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
       String moduleName = this.getModuleName(unit);
       sb.append("module=");
       sb.append(moduleName);
-      if (this.informer.isJavaEEComponent(unit))
+      if (this.informer.isJavaEEComponent(unit) && !this.isSharedENC(unit))
       {
          String componentName = this.getComponentName(unit);
          sb.append(",name=");
@@ -183,10 +187,55 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
       return sb.toString();
    }
    
+   /**
+    * Returns the  MC bean name of either {@link JavaEEComponent} or a {@link JavaEEModule}
+    * depending on the deployment unit
+    * @param deploymentUnit
+    * @return
+    */
+   protected String getENCContextMCBeanName(DeploymentUnit deploymentUnit)
+   {
+      String applicationName = this.getApplicationName(deploymentUnit);
+      String moduleName = this.getModuleName(deploymentUnit);
+
+      final StringBuilder builder = new StringBuilder("jboss.naming:");
+      if (applicationName != null)
+      {
+         builder.append("application=").append(applicationName).append(",");
+      }
+      builder.append("module=").append(moduleName);
+      if (!this.isSharedENC(deploymentUnit))
+      {
+         String componentName = this.getComponentName(deploymentUnit);
+         builder.append(",component=").append(componentName);
+      }
+      return builder.toString();
+   }
+   
+   protected boolean isSharedENC(DeploymentUnit deploymentUnit)
+   {
+      JBossMetaData jbossMetaData = deploymentUnit.getAttachment(JBossMetaData.class);
+      JBossWebMetaData jbosswebMetaData = deploymentUnit.getAttachment(JBossWebMetaData.class);
+      if (jbossMetaData != null && jbosswebMetaData != null)
+      {
+         return true;
+      }
+      return false;
+   }
+   
+   
+   protected AbstractInjectionValueMetaData getNamingContextInjectionMetaData(DeploymentUnit deploymentUnit)
+   {
+      String encCtxMCBeanName = this.getENCContextMCBeanName(deploymentUnit);
+      AbstractInjectionValueMetaData namingContextInjectionMetaData = new AbstractInjectionValueMetaData(encCtxMCBeanName,
+            "context");
+      return namingContextInjectionMetaData;
+   }
+   
    protected abstract void attachSwitchBoardBMD(DeploymentUnit deploymentUnit, BeanMetaData switchBoardBMD);
    
    protected abstract void attachBarrier(DeploymentUnit deploymentUnit, Barrier switchBoard);
    
-   protected abstract AbstractInjectionValueMetaData getNamingContextInjectionMetaData(DeploymentUnit deploymentUnit);
+   
 
 }

@@ -44,7 +44,7 @@
 
 
     <properties>
-        <version.jboss.logging>2.1.1.GA</version.jboss.logging>
+        <version.jboss.logging>3.0.0.Beta4</version.jboss.logging>
         <version.junit>4.8.1</version.junit>
         <version.mockito>1.8.4</version.mockito>
         <version.reloaded.naming>0.2.0</version.reloaded.naming>
@@ -91,7 +91,7 @@
 
             <dependency>
                 <groupId>org.jboss.logging</groupId>
-                <artifactId>jboss-logging-spi</artifactId>
+                <artifactId>jboss-logging</artifactId>
                 <version>${version.jboss.logging}</version>
             </dependency>
 

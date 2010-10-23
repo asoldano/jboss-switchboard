@@ -26,7 +26,7 @@
 
         <dependency>
             <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-spi</artifactId>
+            <artifactId>jboss-logging</artifactId>
         </dependency>
 
         <dependency>
@@ -47,6 +47,12 @@
             <groupId>org.jboss</groupId>
             <artifactId>jboss-common-core</artifactId>
             <version>${version.jboss.common.core}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.logging</groupId>
+                    <artifactId>jboss-logging-spi</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
 
