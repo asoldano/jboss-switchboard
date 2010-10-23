@@ -22,7 +22,11 @@
     </bean>
 
     <!--  Resource providers -->
+
     <!--  processes env-entry resources (EE.5.4 of Java EE6 spec) -->
     <bean name="org.jboss.switchboard.EnvEntryResourceProvider" class="org.jboss.switchboard.mc.resource.provider.EnvEntryResourceProvider"/>
+
+    <!--  processes resource-env-entry resources (EE.5.8 of Java EE6 spec) -->
+    <bean name="org.jboss.switchboard.ResourceEnvRefResourceProvider" class="org.jboss.switchboard.mc.resource.provider.ResourceEnvRefProvider"/>
     
 </deployment>

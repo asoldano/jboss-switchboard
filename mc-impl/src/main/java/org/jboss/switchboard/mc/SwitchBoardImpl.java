@@ -28,9 +28,9 @@ import java.util.Map;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
-import org.jboss.beans.metadata.plugins.AbstractDependencyMetaData;
 import org.jboss.beans.metadata.spi.DependencyMetaData;
 import org.jboss.switchboard.impl.ENCOperator;
+import org.jboss.switchboard.mc.dependency.SwitchBoardDependencyMetaData;
 import org.jboss.switchboard.spi.Barrier;
 import org.jboss.switchboard.spi.Resource;
 
@@ -87,7 +87,7 @@ public class SwitchBoardImpl implements Barrier
          Object dependency = encBinding.getDependency();
          if (dependency != null)
          {
-            AbstractDependencyMetaData mcDependency = new AbstractDependencyMetaData(dependency);
+            DependencyMetaData mcDependency = new SwitchBoardDependencyMetaData(dependency);
             dependencies.add(mcDependency);
          }
       }

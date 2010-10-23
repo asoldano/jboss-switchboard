@@ -19,39 +19,56 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.jbmeta.javaee.environment;
+package org.jboss.switchboard.mc.dependency;
 
-import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferenceMetaData;
-import org.jboss.switchboard.javaee.environment.ResourceEnvRefType;
+import javax.naming.Context;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
+
+import org.jboss.dependency.plugins.AbstractDependencyItem;
+import org.jboss.dependency.spi.Controller;
 
 /**
- * ResourceEnvReference
+ * JNDIDependency
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class ResourceEnvReference extends JavaEEResource implements ResourceEnvRefType
+public class JNDIDependency extends AbstractDependencyItem
 {
 
-   private ResourceEnvironmentReferenceMetaData delegate;
+   private Context ctx;
    
-   public ResourceEnvReference(ResourceEnvironmentReferenceMetaData delegate)
+   private String jndiName;
+   
+   public JNDIDependency(Context ctx, String jndiName)
    {
-      super(delegate.getLookupName(), delegate.getMappedName(), InjectionTargetConverter.convert(delegate
-            .getInjectionTargets()));
-      this.delegate = delegate;
+      this.ctx = ctx;
+      this.jndiName = jndiName;
    }
    
    @Override
-   public String getResourceType()
+   public boolean resolve(Controller controller)
    {
-      return this.delegate.getType();
+      try
+      {
+         Object obj = this.ctx.lookup(jndiName);
+         // mark as resolved
+         this.setResolved(true);
+      }
+      catch (NameNotFoundException nnfe)
+      {
+         // mark as unresolved
+         this.setResolved(false);
+      }
+      catch (NamingException ne)
+      {
+         throw new RuntimeException("Exception during resolving jndi dependency for jndi name: " + this.jndiName
+               + " in jndi context " + this.ctx, ne);
+      }
+      
+      // return the resolution status
+      return this.isResolved();
    }
-
-   @Override
-   public String getName()
-   {
-      return this.delegate.getResourceEnvRefName();
-   }
-
+   
 }

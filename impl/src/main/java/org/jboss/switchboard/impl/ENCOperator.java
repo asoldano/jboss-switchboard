@@ -94,7 +94,7 @@ public class ENCOperator
          String jndiName = binding.getKey();
          Object jndiObject = binding.getValue().getTarget();
          Util.bind(this.jndiContext, jndiName, jndiObject);
-         logger.debug("ENCOperator " + this.jndiContext + " bound ENC resource in java:comp namespace at jndiName " + jndiName);
+         logger.debug("ENCOperator " + this.jndiContext + " bound ENC resource at java:comp/env/" + jndiName);
       }
       this.contextPopulated = true;
    }
@@ -105,7 +105,7 @@ public class ENCOperator
       {
          String jndiName = binding.getKey();
          this.jndiContext.unbind(jndiName);
-         logger.debug("ENCOperator " + this.jndiContext + " unbound ENC resource in java:comp namespace from jndiName " + jndiName);
+         logger.debug("ENCOperator " + this.jndiContext + " unbound ENC resource from java:comp/env/" + jndiName);
       }
       this.contextPopulated = false;
    }

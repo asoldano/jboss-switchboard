@@ -19,39 +19,61 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.jbmeta.javaee.environment;
+package org.jboss.switchboard.mc.resource;
 
-import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferenceMetaData;
-import org.jboss.switchboard.javaee.environment.ResourceEnvRefType;
+import javax.naming.Context;
+import javax.naming.LinkRef;
+import javax.naming.NamingException;
+
+import org.jboss.switchboard.mc.dependency.JNDIDependency;
+import org.jboss.switchboard.spi.Resource;
 
 /**
- * ResourceEnvReference
+ * LinkRefResource
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class ResourceEnvReference extends JavaEEResource implements ResourceEnvRefType
+public class LinkRefResource implements Resource
 {
 
-   private ResourceEnvironmentReferenceMetaData delegate;
+   private LinkRef linkRef;
    
-   public ResourceEnvReference(ResourceEnvironmentReferenceMetaData delegate)
+   private Context ctx;
+   
+   private JNDIDependency dependency;
+   
+   public LinkRefResource(Context ctx, LinkRef linkRef)
    {
-      super(delegate.getLookupName(), delegate.getMappedName(), InjectionTargetConverter.convert(delegate
-            .getInjectionTargets()));
-      this.delegate = delegate;
+      this.linkRef = linkRef;
+      this.ctx = ctx;
+      // initialize the dependency 
+      this.createJNDIDependency();
+      
    }
    
    @Override
-   public String getResourceType()
+   public Object getDependency()
    {
-      return this.delegate.getType();
+      return this.dependency;
    }
 
    @Override
-   public String getName()
+   public Object getTarget()
    {
-      return this.delegate.getResourceEnvRefName();
+      return this.linkRef;
    }
 
+   private void createJNDIDependency()
+   {
+      try
+      {
+         this.dependency = new JNDIDependency(ctx, this.linkRef.getLinkName());
+      }
+      catch (NamingException e)
+      {
+         throw new RuntimeException(e);
+      }
+   }
+   
 }

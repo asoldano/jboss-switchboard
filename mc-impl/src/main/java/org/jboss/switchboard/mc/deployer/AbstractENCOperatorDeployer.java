@@ -34,12 +34,8 @@ import org.jboss.beans.metadata.spi.builder.BeanMetaDataBuilder;
 import org.jboss.deployers.spi.deployer.helpers.AbstractRealDeployer;
 import org.jboss.deployers.structure.spi.DeploymentUnit;
 import org.jboss.logging.Logger;
-import org.jboss.metadata.ejb.jboss.JBossMetaData;
 import org.jboss.metadata.javaee.spec.Environment;
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.reloaded.naming.deployers.javaee.JavaEEComponentInformer;
-import org.jboss.reloaded.naming.spi.JavaEEComponent;
-import org.jboss.reloaded.naming.spi.JavaEEModule;
 import org.jboss.switchboard.impl.ENCOperator;
 import org.jboss.switchboard.impl.JndiEnvironmentProcessor;
 import org.jboss.switchboard.jbmeta.javaee.environment.JndiEnvironmentMetadata;
@@ -67,6 +63,8 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
    {
       this.informer = informer;
       setInputs(informer.getRequiredAttachments());
+      setOutput(BeanMetaData.class);
+      addOutput(Barrier.class);
    }
 
    @Inject
@@ -126,6 +124,12 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
          {
             SwitchBoardImpl switchboard = (SwitchBoardImpl) barrier;
             switchboard.addENCBinding(resources);
+            
+            // recreate and attach SwitchBoard BMD, since the 
+            // new Resource binding might have additional dependencies
+            BeanMetaData switchBoardBMD = this.createSwitchBoardBMD(unit, switchboard);
+            this.attachSwitchBoardBMD(unit, switchBoardBMD);
+
          }
       }
    }
@@ -137,14 +141,10 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
 
    protected BeanMetaData createSwitchBoardBMD(DeploymentUnit unit, SwitchBoardImpl switchBoard)
    {
-      //String mcBeanName = this.getSwitchBoardMCBeanName(unit);
       String mcBeanName = switchBoard.getId();
       BeanMetaDataBuilder builder = BeanMetaDataBuilderFactory.createBuilder(mcBeanName, switchBoard.getClass().getName());
       builder.setConstructorValue(switchBoard);
 
-//      String encCtxMCBeanName = this.getENCContextMCBeanName(unit);
-//      AbstractInjectionValueMetaData javaeeComponentInjection = new AbstractInjectionValueMetaData(encCtxMCBeanName,
-//            "context");
       AbstractInjectionValueMetaData namingContextInjection = this.getNamingContextInjectionMetaData(unit);
       builder.addPropertyMetaData("context", namingContextInjection);
 
@@ -157,30 +157,8 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
          
       }
       return builder.getBeanMetaData();
-//      if(unit.isComponent())
-//      {
-//         unit.getParent().addAttachment(BeanMetaData.class + ":" + mcBeanName, builder.getBeanMetaData());
-//      }
-//      else
-//      {
-//         unit.addAttachment(BeanMetaData.class + ":" + mcBeanName, builder.getBeanMetaData());
-//      }
-//
-//      if (unit.isComponent() && this.isSharedENC(unit))
-//      {
-//         unit.getParent().addAttachment(Barrier.class, switchBoard);
-//      }
-//      else
-//      {
-//         unit.addAttachment(Barrier.class, switchBoard);
-//      }
    }
    
-   protected abstract void attachSwitchBoardBMD(DeploymentUnit deploymentUnit, BeanMetaData switchBoardBMD);
-   
-   protected abstract void attachBarrier(DeploymentUnit deploymentUnit, Barrier switchBoard);
-   
-   protected abstract AbstractInjectionValueMetaData getNamingContextInjectionMetaData(DeploymentUnit deploymentUnit);
 
    protected String getSwitchBoardMCBeanName(DeploymentUnit unit)
    {
@@ -204,40 +182,11 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
 
       return sb.toString();
    }
-
-   /**
-    * Returns the  MC bean name of either {@link JavaEEComponent} or a {@link JavaEEModule}
-    * depending on the deployment unit
-    * @param deploymentUnit
-    * @return
-    */
-   private String getENCContextMCBeanName(DeploymentUnit deploymentUnit)
-   {
-      String applicationName = this.getApplicationName(deploymentUnit);
-      String moduleName = this.getModuleName(deploymentUnit);
-
-      final StringBuilder builder = new StringBuilder("jboss.naming:");
-      if (applicationName != null)
-      {
-         builder.append("application=").append(applicationName).append(",");
-      }
-      builder.append("module=").append(moduleName);
-      if (this.informer.isJavaEEComponent(deploymentUnit) && !this.isSharedENC(deploymentUnit))
-      {
-         String componentName = this.getComponentName(deploymentUnit);
-         builder.append(",component=").append(componentName);
-      }
-      return builder.toString();
-   }
    
-   private boolean isSharedENC(DeploymentUnit deploymentUnit)
-   {
-      JBossMetaData jbossMetaData = deploymentUnit.getAttachment(JBossMetaData.class);
-      JBossWebMetaData jbosswebMetaData = deploymentUnit.getAttachment(JBossWebMetaData.class);
-      if (jbossMetaData != null && jbosswebMetaData != null)
-      {
-         return true;
-      }
-      return false;
-   }
+   protected abstract void attachSwitchBoardBMD(DeploymentUnit deploymentUnit, BeanMetaData switchBoardBMD);
+   
+   protected abstract void attachBarrier(DeploymentUnit deploymentUnit, Barrier switchBoard);
+   
+   protected abstract AbstractInjectionValueMetaData getNamingContextInjectionMetaData(DeploymentUnit deploymentUnit);
+
 }

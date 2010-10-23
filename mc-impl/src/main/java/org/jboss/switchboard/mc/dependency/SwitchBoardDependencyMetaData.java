@@ -19,39 +19,40 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.jbmeta.javaee.environment;
+package org.jboss.switchboard.mc.dependency;
 
-import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferenceMetaData;
-import org.jboss.switchboard.javaee.environment.ResourceEnvRefType;
+import org.jboss.beans.metadata.plugins.AbstractDependencyMetaData;
+import org.jboss.beans.metadata.spi.MetaDataVisitor;
 
 /**
- * ResourceEnvReference
+ * SwitchBoardDependency
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class ResourceEnvReference extends JavaEEResource implements ResourceEnvRefType
+public class SwitchBoardDependencyMetaData extends AbstractDependencyMetaData
 {
 
-   private ResourceEnvironmentReferenceMetaData delegate;
+   private boolean isJNDIDependency;
    
-   public ResourceEnvReference(ResourceEnvironmentReferenceMetaData delegate)
+   public SwitchBoardDependencyMetaData(Object dependency)
    {
-      super(delegate.getLookupName(), delegate.getMappedName(), InjectionTargetConverter.convert(delegate
-            .getInjectionTargets()));
-      this.delegate = delegate;
+      super(dependency);
+      if (dependency instanceof JNDIDependency)
+      {
+         this.isJNDIDependency = true;
+      }
    }
    
    @Override
-   public String getResourceType()
+   public void initialVisit(MetaDataVisitor visitor)
    {
-      return this.delegate.getType();
+      if (!this.isJNDIDependency)
+      {
+         super.initialVisit(visitor);
+         return;
+      }
+      visitor.addDependency((JNDIDependency) this.dependency);
+      visitor.initialVisit(this);
    }
-
-   @Override
-   public String getName()
-   {
-      return this.delegate.getResourceEnvRefName();
-   }
-
 }

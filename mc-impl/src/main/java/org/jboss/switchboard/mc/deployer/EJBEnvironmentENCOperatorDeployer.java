@@ -53,7 +53,6 @@ public class EJBEnvironmentENCOperatorDeployer extends AbstractENCOperatorDeploy
       super(informer);
       setComponentsOnly(true);
       setInput(JBossEnterpriseBeanMetaData.class);
-      setOutput(BeanMetaData.class);
    }
 
    @Override

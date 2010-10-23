@@ -49,8 +49,6 @@ public class WebEnvironmentENCOperatorDeployer extends AbstractENCOperatorDeploy
    {
       super(informer);
       setInput(JBossWebMetaData.class);
-      setOutput(BeanMetaData.class);
-      
    }
 
    @Override
