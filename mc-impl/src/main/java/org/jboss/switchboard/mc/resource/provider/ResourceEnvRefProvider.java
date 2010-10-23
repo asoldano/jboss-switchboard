@@ -21,6 +21,7 @@
  */
 package org.jboss.switchboard.mc.resource.provider;
 
+import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.LinkRef;
 import javax.naming.NamingException;
@@ -53,14 +54,14 @@ public class ResourceEnvRefProvider implements MCBasedResourceProvider<ResourceE
       String lookupName = resEnvRef.getLookupName();
       if (lookupName != null && !lookupName.trim().isEmpty())
       {
-         return this.getLinkRefResource(lookupName);
+         return this.getLinkRefResource(this.getContext(deploymentUnit), lookupName);
       }
       
       // now check mapped name
       String mappedName = resEnvRef.getMappedName();
       if (mappedName != null && !mappedName.trim().isEmpty())
       {
-         return this.getLinkRefResource(mappedName);
+         return this.getLinkRefResource(this.getContext(deploymentUnit), mappedName);
       }
       
       // Without a mapped-name or a lookup-name, we can't resolve a
@@ -69,16 +70,26 @@ public class ResourceEnvRefProvider implements MCBasedResourceProvider<ResourceE
             + resEnvRef.getName() + " of type " + resEnvRef.getResourceType());
    }
 
-   private LinkRefResource getLinkRefResource(String jndiName)
+   private LinkRefResource getLinkRefResource(Context ctx, String jndiName)
    {
+      return new LinkRefResource(ctx, new LinkRef(jndiName));
+   }
+
+   private Context getContext(DeploymentUnit deploymentUnit)
+   {
+      // TODO: We somehow have to get a JavaEEModule out of the DU.
+      // The JavaEEModuleInformer just provides a MC bean name of the JavaEEModule,
+      // which really isn't sufficient. We need an instance of the JavaEEModule, even
+      // if the JavaEEModule isn't fully initialized.
+      
+      // This is temporary
       try
       {
-         return new LinkRefResource(new InitialContext(), new LinkRef(jndiName));
+         return new InitialContext();
       }
       catch (NamingException ne)
       {
          throw new RuntimeException(ne);
       }
-      
    }
 }
