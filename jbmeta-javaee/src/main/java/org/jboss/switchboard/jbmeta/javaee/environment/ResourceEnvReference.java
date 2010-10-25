@@ -51,7 +51,7 @@ public class ResourceEnvReference extends JavaEEResource implements ResourceEnvR
    @Override
    public String getName()
    {
-      return this.delegate.getResourceEnvRefName();
+      return "env/" + this.delegate.getResourceEnvRefName();
    }
 
 }

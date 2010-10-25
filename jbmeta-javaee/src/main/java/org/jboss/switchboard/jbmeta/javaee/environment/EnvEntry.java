@@ -57,7 +57,7 @@ public class EnvEntry extends JavaEEResource implements SimpleEnvironmentEntryTy
    @Override
    public String getName()
    {
-      return this.delegate.getEnvEntryName();
+      return "env/" + this.delegate.getEnvEntryName();
    }
 
 }

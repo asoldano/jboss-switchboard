@@ -73,7 +73,7 @@ public class PersistenceContextReference extends JavaEEResource implements Persi
    @Override
    public String getName()
    {
-      return this.delegate.getPersistenceContextRefName();
+      return "env/" + this.delegate.getPersistenceContextRefName();
    }
 
    @Override

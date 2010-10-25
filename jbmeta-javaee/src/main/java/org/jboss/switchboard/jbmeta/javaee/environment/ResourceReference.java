@@ -77,7 +77,7 @@ public class ResourceReference extends JavaEEResource implements ResourceRefType
    @Override
    public String getName()
    {
-      return this.delegate.getResourceRefName();
+      return "env/" + this.delegate.getResourceRefName();
    }
 
 }

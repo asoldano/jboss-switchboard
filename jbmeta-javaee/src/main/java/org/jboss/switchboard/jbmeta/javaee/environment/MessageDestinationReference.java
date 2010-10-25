@@ -69,7 +69,7 @@ public class MessageDestinationReference extends JavaEEResource implements Messa
    @Override
    public String getName()
    {
-      return this.delegate.getMessageDestinationRefName();
+      return "env/" + this.delegate.getMessageDestinationRefName();
    }
 
 

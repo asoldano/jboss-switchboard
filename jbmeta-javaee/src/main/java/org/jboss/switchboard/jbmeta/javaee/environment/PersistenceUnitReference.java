@@ -50,7 +50,7 @@ public class PersistenceUnitReference extends JavaEEResource implements Persiste
    @Override
    public String getName()
    {
-      return this.delegate.getPersistenceUnitRefName();
+      return "env/" + this.delegate.getPersistenceUnitRefName();
    }
 
 }

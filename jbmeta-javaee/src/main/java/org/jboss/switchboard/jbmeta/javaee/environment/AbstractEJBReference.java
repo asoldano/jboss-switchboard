@@ -58,7 +58,7 @@ public abstract class AbstractEJBReference extends JavaEEResource
 
    public String getName()
    {
-      return this.delegate.getEjbRefName();
+      return "env/" + this.delegate.getEjbRefName();
    }
 
 }

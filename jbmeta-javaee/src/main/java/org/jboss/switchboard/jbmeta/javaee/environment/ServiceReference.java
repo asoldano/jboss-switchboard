@@ -109,7 +109,7 @@ public class ServiceReference extends JavaEEResource implements ServiceRefType
    @Override
    public String getName()
    {
-      return this.delegate.getServiceRefName();
+      return "env/" + this.delegate.getServiceRefName();
    }
    
    private void initHandlers()
