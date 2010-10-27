@@ -19,56 +19,43 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.mc.dependency;
+package org.jboss.switchboard.impl.resource;
 
-import javax.naming.Context;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingException;
+import javax.naming.LinkRef;
 
-import org.jboss.dependency.plugins.AbstractDependencyItem;
-import org.jboss.dependency.spi.Controller;
+import org.jboss.switchboard.spi.Resource;
 
 /**
- * JNDIDependency
+ * LinkRefResource
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class JNDIDependency extends AbstractDependencyItem
+public class LinkRefResource implements Resource
 {
 
-   private Context ctx;
-   
-   private String jndiName;
-   
-   public JNDIDependency(Context ctx, String jndiName)
+   private LinkRef linkRef;
+
+   private JNDIDependency dependency;
+
+   public LinkRefResource(String jndiName)
    {
-      this.ctx = ctx;
-      this.jndiName = jndiName;
+      this.linkRef = new LinkRef(jndiName);
+      this.dependency = new JNDIDependency(jndiName);
+
    }
-   
+
    @Override
-   public boolean resolve(Controller controller)
+   public Object getDependency()
    {
-      try
-      {
-         Object obj = this.ctx.lookup(jndiName);
-         // mark as resolved
-         this.setResolved(true);
-      }
-      catch (NameNotFoundException nnfe)
-      {
-         // mark as unresolved
-         this.setResolved(false);
-      }
-      catch (NamingException ne)
-      {
-         throw new RuntimeException("Exception during resolving jndi dependency for jndi name: " + this.jndiName
-               + " in jndi context " + this.ctx, ne);
-      }
-      
-      // return the resolution status
-      return this.isResolved();
+      return this.dependency;
    }
-   
+
+   @Override
+   public Object getTarget()
+   {
+      return this.linkRef;
+
+   }
+
 }

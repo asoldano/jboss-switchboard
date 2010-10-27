@@ -29,6 +29,8 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 
 import org.jboss.beans.metadata.spi.DependencyMetaData;
+import org.jboss.reloaded.naming.spi.JavaEEComponent;
+import org.jboss.reloaded.naming.spi.JavaEEModule;
 import org.jboss.switchboard.impl.ENCOperator;
 import org.jboss.switchboard.mc.dependency.SwitchBoardDependencyMetaData;
 import org.jboss.switchboard.spi.Barrier;
@@ -47,6 +49,8 @@ public class SwitchBoardImpl implements Barrier
    
    private ENCOperator encOperator;
    
+   private JavaEEComponent javaEEComponent;
+   
    public SwitchBoardImpl(String barrierId, ENCOperator encOperator)
    {
       this.id = barrierId;
@@ -63,10 +67,43 @@ public class SwitchBoardImpl implements Barrier
       this.encOperator.unbind();
    }
    
-   public void setContext(Context ctx)
+   public JavaEEComponent getJavaEEComponent()
    {
-      this.encOperator.setContext(ctx);
+      return this.javaEEComponent;
    }
+   
+   public void setContext(JavaEEComponent javaComp)
+   {
+      this.encOperator.setContext(javaComp.getContext());
+      this.javaEEComponent = javaComp;
+   }
+
+   public void setContext(final JavaEEModule javaeeModule)
+   {
+      JavaEEComponent javaComp = new JavaEEComponent()
+      {
+         
+         @Override
+         public String getName()
+         {
+            return javaeeModule.getName();
+         }
+         
+         @Override
+         public JavaEEModule getModule()
+         {
+            return javaeeModule;
+         }
+         
+         @Override
+         public Context getContext()
+         {
+            return javaeeModule.getContext();
+         }
+      };
+      this.setContext(javaComp);
+   }
+
    
    @Override
    public String getId()
@@ -87,7 +124,7 @@ public class SwitchBoardImpl implements Barrier
          Object dependency = encBinding.getDependency();
          if (dependency != null)
          {
-            DependencyMetaData mcDependency = new SwitchBoardDependencyMetaData(dependency);
+            DependencyMetaData mcDependency = new SwitchBoardDependencyMetaData(this, dependency);
             dependencies.add(mcDependency);
          }
       }

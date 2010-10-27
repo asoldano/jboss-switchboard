@@ -19,61 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.mc.resource;
-
-import javax.naming.Context;
-import javax.naming.LinkRef;
-import javax.naming.NamingException;
-
-import org.jboss.switchboard.mc.dependency.JNDIDependency;
-import org.jboss.switchboard.spi.Resource;
+package org.jboss.switchboard.impl.resource;
 
 /**
- * LinkRefResource
+ * JNDIDependency
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class LinkRefResource implements Resource
+public class JNDIDependency
 {
 
-   private LinkRef linkRef;
+   private String jndiName;
    
-   private Context ctx;
-   
-   private JNDIDependency dependency;
-   
-   public LinkRefResource(Context ctx, LinkRef linkRef)
+   public JNDIDependency(String jndiName)
    {
-      this.linkRef = linkRef;
-      this.ctx = ctx;
-      // initialize the dependency 
-      this.createJNDIDependency();
-      
+      this.jndiName = jndiName;
    }
    
-   @Override
-   public Object getDependency()
+   public String getJNDIName()
    {
-      return this.dependency;
+      return this.jndiName;
    }
-
-   @Override
-   public Object getTarget()
-   {
-      return this.linkRef;
-   }
-
-   private void createJNDIDependency()
-   {
-      try
-      {
-         this.dependency = new JNDIDependency(ctx, this.linkRef.getLinkName());
-      }
-      catch (NamingException e)
-      {
-         throw new RuntimeException(e);
-      }
-   }
-   
 }
+

@@ -23,6 +23,8 @@ package org.jboss.switchboard.mc.dependency;
 
 import org.jboss.beans.metadata.plugins.AbstractDependencyMetaData;
 import org.jboss.beans.metadata.spi.MetaDataVisitor;
+import org.jboss.switchboard.impl.resource.JNDIDependency;
+import org.jboss.switchboard.mc.SwitchBoardImpl;
 
 /**
  * SwitchBoardDependency
@@ -35,12 +37,18 @@ public class SwitchBoardDependencyMetaData extends AbstractDependencyMetaData
 
    private boolean isJNDIDependency;
    
-   public SwitchBoardDependencyMetaData(Object dependency)
+   private JNDIDependency jndiDependency;
+   
+   private SwitchBoardImpl switchBoard;
+   
+   public SwitchBoardDependencyMetaData(SwitchBoardImpl switchBoard, Object dependency)
    {
       super(dependency);
+      this.switchBoard = switchBoard;
       if (dependency instanceof JNDIDependency)
       {
          this.isJNDIDependency = true;
+         this.jndiDependency = (JNDIDependency) dependency;
       }
    }
    
@@ -52,7 +60,7 @@ public class SwitchBoardDependencyMetaData extends AbstractDependencyMetaData
          super.initialVisit(visitor);
          return;
       }
-      visitor.addDependency((JNDIDependency) this.dependency);
+      visitor.addDependency(new JNDIDependencyItem(switchBoard, this.jndiDependency.getJNDIName()));
       visitor.initialVisit(this);
    }
 }

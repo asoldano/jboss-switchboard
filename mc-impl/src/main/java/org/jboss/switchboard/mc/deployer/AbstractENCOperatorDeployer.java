@@ -24,12 +24,15 @@ package org.jboss.switchboard.mc.deployer;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.beans.metadata.api.annotations.Inject;
 import org.jboss.beans.metadata.plugins.AbstractInjectionValueMetaData;
 import org.jboss.beans.metadata.plugins.builder.BeanMetaDataBuilderFactory;
 import org.jboss.beans.metadata.spi.BeanMetaData;
+import org.jboss.beans.metadata.spi.DemandMetaData;
 import org.jboss.beans.metadata.spi.DependencyMetaData;
+import org.jboss.beans.metadata.spi.SupplyMetaData;
 import org.jboss.beans.metadata.spi.builder.BeanMetaDataBuilder;
 import org.jboss.deployers.spi.deployer.helpers.AbstractRealDeployer;
 import org.jboss.deployers.structure.spi.DeploymentUnit;
@@ -66,7 +69,7 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
    public AbstractENCOperatorDeployer(JavaEEComponentInformer informer)
    {
       this.informer = informer;
-      setInputs(informer.getRequiredAttachments());
+      //setInputs(informer.getRequiredAttachments());
       setOutput(BeanMetaData.class);
       addOutput(Barrier.class);
    }
@@ -152,14 +155,44 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
       AbstractInjectionValueMetaData namingContextInjection = this.getNamingContextInjectionMetaData(unit);
       builder.addPropertyMetaData("context", namingContextInjection);
 
-      logger.debug("Installing SwitchBoard: " + mcBeanName + " for unit: " + unit.getSimpleName()
-            + " with dependencies: ");
       for (DependencyMetaData dependency : switchBoard.getDependencies())
       {
-            logger.debug(dependency);
-            builder.addDependency(dependency);
-         
+         builder.addDependency(dependency);
       }
+      
+      // log the switchboard installation 
+      if (logger.isDebugEnabled())
+      {
+         logger.debug("Installing SwitchBoard: " + mcBeanName + " for unit: " + unit.getSimpleName());
+         Set<DependencyMetaData> dependencies = builder.getBeanMetaData().getDepends();
+         if (dependencies != null)
+         {
+            logger.debug("with dependencies:");
+            for (DependencyMetaData dependency : dependencies)
+            {
+               logger.debug(dependency);
+            }
+         }
+         Set<DemandMetaData> demands = builder.getBeanMetaData().getDemands();
+         if (demands != null)
+         {
+            logger.debug("demands:");
+            for (DemandMetaData demand : demands)
+            {
+               logger.debug(demand);
+            }
+         }
+         Set<SupplyMetaData> supplies = builder.getBeanMetaData().getSupplies();
+         if (supplies != null)
+         {
+            logger.debug("supplies:");
+            for (SupplyMetaData supply : supplies)
+            {
+               logger.debug(supply);
+            }
+         }
+      }
+      // return the switchboard BMD
       return builder.getBeanMetaData();
    }
    
@@ -227,8 +260,7 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
    protected AbstractInjectionValueMetaData getNamingContextInjectionMetaData(DeploymentUnit deploymentUnit)
    {
       String encCtxMCBeanName = this.getENCContextMCBeanName(deploymentUnit);
-      AbstractInjectionValueMetaData namingContextInjectionMetaData = new AbstractInjectionValueMetaData(encCtxMCBeanName,
-            "context");
+      AbstractInjectionValueMetaData namingContextInjectionMetaData = new AbstractInjectionValueMetaData(encCtxMCBeanName);
       return namingContextInjectionMetaData;
    }
    
