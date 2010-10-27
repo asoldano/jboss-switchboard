@@ -83,10 +83,14 @@ public class EnvEntryResourceProvider implements MCBasedResourceProvider<SimpleE
     */
    private Object getEnvEntryValue(ClassLoader cl, SimpleEnvironmentEntryType envEntry)
    {
-      // find out the type of the env-entry
-      String envEntryType = this.getEnvEntryType(cl, envEntry);
       // get the (string) value
       String value = envEntry.getValue();
+      if (value == null)
+      {
+         return null;
+      }
+      // find out the type of the env-entry
+      String envEntryType = this.getEnvEntryType(cl, envEntry);
 
       if (envEntryType == null)
       {
