@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.impl.test.processor.unit;
+package org.jboss.switchboard.mc.test.processor.unit;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -27,18 +27,20 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.jboss.switchboard.impl.JndiEnvironmentProcessor;
-import org.jboss.switchboard.impl.ResourceProviderRegistry;
-import org.jboss.switchboard.impl.test.common.DummyEJBReferenceProvider;
-import org.jboss.switchboard.impl.test.common.DummyEJBReferenceType;
-import org.jboss.switchboard.impl.test.common.DummyJndiEnvironment;
-import org.jboss.switchboard.impl.test.common.DummyPersistenceContextProvider;
-import org.jboss.switchboard.impl.test.common.DummyPersistenceContextType;
+import org.jboss.deployers.structure.spi.DeploymentUnit;
+import org.jboss.switchboard.mc.JndiEnvironmentProcessor;
+import org.jboss.switchboard.mc.resource.provider.ResourceProviderRegistry;
+import org.jboss.switchboard.mc.spi.MCBasedResourceProvider;
+import org.jboss.switchboard.mc.test.common.DummyEJBReferenceProvider;
+import org.jboss.switchboard.mc.test.common.DummyEJBReferenceType;
+import org.jboss.switchboard.mc.test.common.DummyJndiEnvironment;
+import org.jboss.switchboard.mc.test.common.DummyPersistenceContextProvider;
+import org.jboss.switchboard.mc.test.common.DummyPersistenceContextType;
 import org.jboss.switchboard.spi.EnvironmentEntryType;
 import org.jboss.switchboard.spi.JndiEnvironment;
 import org.jboss.switchboard.spi.Resource;
-import org.jboss.switchboard.spi.ResourceProvider;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 /**
  * Test {@link JndiEnvironmentProcessor}
@@ -57,10 +59,10 @@ public class JndiEnvironmentProcessorTestCase
    {
       ResourceProviderRegistry registry = new ResourceProviderRegistry();
       // register EJB ref provider
-      ResourceProvider<String, ? extends EnvironmentEntryType> ejbRefProvider = new DummyEJBReferenceProvider<String>();
+      MCBasedResourceProvider<? extends EnvironmentEntryType> ejbRefProvider = new DummyEJBReferenceProvider();
       registry.registerProvider(ejbRefProvider);
       // register PC ref provider
-      ResourceProvider<String, ? extends EnvironmentEntryType> pcRefProvider = new DummyPersistenceContextProvider<String>();
+      MCBasedResourceProvider<? extends EnvironmentEntryType> pcRefProvider = new DummyPersistenceContextProvider();
       registry.registerProvider(pcRefProvider);
       
       // create the env entries
@@ -77,7 +79,7 @@ public class JndiEnvironmentProcessorTestCase
       // create the processor
       JndiEnvironmentProcessor processor =  new JndiEnvironmentProcessor(registry);
       // now process and create the resource(s)
-      Map<String, Resource> resources = processor.process(new String("Dummy context"), environment);
+      Map<String, Resource> resources = processor.process(Mockito.mock(DeploymentUnit.class), environment);
       
       // test the resources
       Assert.assertNotNull("No resources were created", resources);

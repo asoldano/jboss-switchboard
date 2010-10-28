@@ -185,15 +185,7 @@ public class EnvEntryResourceProvider implements MCBasedResourceProvider<SimpleE
          return null;
       }
       InjectionTarget injectionTarget = injectionTargets.iterator().next();
-      AccessibleObject accessibleObject = InjectionTargetUtil.findInjectionTarget(cl, injectionTarget);
-      if (accessibleObject instanceof Field)
-      {
-         return ((Field) accessibleObject).getType().getName();
-      }
-      else if (accessibleObject instanceof Method)
-      {
-         return ((Method) accessibleObject).getParameterTypes()[0].getName();
-      }
-      return null;
+      Class<?> type = InjectionTargetUtil.getInjectionTargetPropertyType(cl, injectionTarget);
+      return type == null ? null : type.getName();
    }
 }

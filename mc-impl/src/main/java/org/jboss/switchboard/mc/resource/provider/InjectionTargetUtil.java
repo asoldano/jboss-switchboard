@@ -23,6 +23,7 @@ package org.jboss.switchboard.mc.resource.provider;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import org.jboss.switchboard.javaee.environment.InjectionTarget;
 
@@ -59,5 +60,19 @@ public class InjectionTargetUtil
 
       throw new RuntimeException("<injection-target> could not be found: " + target.getTargetClass() + "." + target.getTargetName());
 
+   }
+   
+   public static Class<?> getInjectionTargetPropertyType(ClassLoader cl, InjectionTarget injectionTarget)
+   {
+      AccessibleObject accessibleObject = InjectionTargetUtil.findInjectionTarget(cl, injectionTarget);
+      if (accessibleObject instanceof Field)
+      {
+         return ((Field) accessibleObject).getType();
+      }
+      else if (accessibleObject instanceof Method)
+      {
+         return ((Method) accessibleObject).getParameterTypes()[0];
+      }
+      return null;
    }
 }

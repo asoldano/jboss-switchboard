@@ -19,34 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.impl.test.common;
+package org.jboss.switchboard.mc.test.common;
 
+import java.util.Collection;
+
+import org.jboss.switchboard.spi.EnvironmentEntryType;
+import org.jboss.switchboard.spi.JndiEnvironment;
 
 /**
- * DummyEJBReferenceType
+ * DummyJndiEnvironment
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class DummyEJBReferenceType implements EjbRefType
+public class DummyJndiEnvironment implements JndiEnvironment
 {
 
-   private String encName;
+   private Collection<EnvironmentEntryType> entries;
    
-   public DummyEJBReferenceType()
+   public DummyJndiEnvironment(Collection<EnvironmentEntryType> entries)
    {
-      
-   }
-   
-   public DummyEJBReferenceType(String encName)
-   {
-      this.encName = encName;
+      this.entries = entries;
    }
    
    @Override
-   public String getName()
+   public Collection<EnvironmentEntryType> getEntries()
    {
-      return this.encName;
+      return this.entries;
    }
 
 }

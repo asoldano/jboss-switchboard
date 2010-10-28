@@ -19,35 +19,44 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.impl.test.common;
+package org.jboss.switchboard.mc.test.common;
 
-import org.jboss.switchboard.spi.EnvironmentEntryType;
+import org.jboss.switchboard.spi.Resource;
 
 /**
- * DummyPersistenceContextType
+ * DummyResource
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class DummyPersistenceContextType implements EnvironmentEntryType
+public class DummyResource implements Resource
 {
 
-   private String encName;
-   
-   public DummyPersistenceContextType()
+   private Object dependency;
+
+   private Object jndiObject;
+
+   public DummyResource()
    {
-      
+
    }
-   
-   public DummyPersistenceContextType(String encName)
+
+   public DummyResource(Object dependency, Object jndiObject)
    {
-      this.encName = encName;
+      this.dependency = dependency;
+      this.jndiObject = jndiObject;
    }
-   
+
    @Override
-   public String getName()
+   public Object getDependency()
    {
-      return this.encName;
+      return this.dependency;
+   }
+
+   @Override
+   public Object getTarget()
+   {
+      return this.jndiObject;
    }
 
 }

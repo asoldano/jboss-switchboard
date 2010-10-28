@@ -19,10 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.impl.test.common;
+package org.jboss.switchboard.mc.test.common;
 
+import org.jboss.deployers.structure.spi.DeploymentUnit;
+import org.jboss.switchboard.mc.spi.MCBasedResourceProvider;
 import org.jboss.switchboard.spi.Resource;
-import org.jboss.switchboard.spi.ResourceProvider;
 
 /**
  * DummyPersistenceContextProvider
@@ -30,11 +31,11 @@ import org.jboss.switchboard.spi.ResourceProvider;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class DummyPersistenceContextProvider<C> implements ResourceProvider<C, DummyPersistenceContextType>
+public class DummyPersistenceContextProvider implements MCBasedResourceProvider<DummyPersistenceContextType>
 {
 
    @Override
-   public Resource provide(C context, DummyPersistenceContextType type)
+   public Resource provide(DeploymentUnit context, DummyPersistenceContextType type)
    {
       return new DummyResource();
    }

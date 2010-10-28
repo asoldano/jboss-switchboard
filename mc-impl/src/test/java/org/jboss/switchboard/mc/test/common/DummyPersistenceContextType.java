@@ -19,33 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.impl.test.common;
-
-import java.util.Collection;
+package org.jboss.switchboard.mc.test.common;
 
 import org.jboss.switchboard.spi.EnvironmentEntryType;
-import org.jboss.switchboard.spi.JndiEnvironment;
 
 /**
- * DummyJndiEnvironment
+ * DummyPersistenceContextType
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class DummyJndiEnvironment implements JndiEnvironment
+public class DummyPersistenceContextType implements EnvironmentEntryType
 {
 
-   private Collection<EnvironmentEntryType> entries;
+   private String encName;
    
-   public DummyJndiEnvironment(Collection<EnvironmentEntryType> entries)
+   public DummyPersistenceContextType()
    {
-      this.entries = entries;
+      
+   }
+   
+   public DummyPersistenceContextType(String encName)
+   {
+      this.encName = encName;
    }
    
    @Override
-   public Collection<EnvironmentEntryType> getEntries()
+   public String getName()
    {
-      return this.entries;
+      return this.encName;
    }
 
 }

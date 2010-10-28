@@ -32,5 +32,5 @@ import java.util.Collection;
 public interface JndiEnvironment
 {
 
-   Collection<EnvironmentEntryType> getEntries();
+   Collection<? extends EnvironmentEntryType> getEntries();
 }
