@@ -33,4 +33,6 @@ public interface JndiEnvironment
 {
 
    Collection<? extends EnvironmentEntryType> getEntries();
+   
+   void addEntry(EnvironmentEntryType entry);
 }

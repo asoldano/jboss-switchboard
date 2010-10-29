@@ -70,7 +70,7 @@ public class JNDIDependencyItem extends AbstractDependencyItem
       CurrentComponent.push(javaeeComp);
       try
       {
-         Object obj = this.getGlobalContext().lookup(jndiName);
+         this.getGlobalContext().lookup(jndiName);
          // mark as resolved
          this.setResolved(true);
       }

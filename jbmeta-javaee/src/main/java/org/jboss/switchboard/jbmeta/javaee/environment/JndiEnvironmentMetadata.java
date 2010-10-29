@@ -59,7 +59,7 @@ public class JndiEnvironmentMetadata implements JndiEnvironment
 
    private Environment delegate;
 
-   private Collection<EnvironmentEntryType> environmentReferences;
+   private Collection<EnvironmentEntryType> environmentEntries;
 
    public JndiEnvironmentMetadata(Environment environment)
    {
@@ -70,12 +70,27 @@ public class JndiEnvironmentMetadata implements JndiEnvironment
    @Override
    public Collection<EnvironmentEntryType> getEntries()
    {
-      return this.environmentReferences;
+      return this.environmentEntries;
    }
 
+   @Override
+   public void addEntry(EnvironmentEntryType entry)
+   {
+      if (entry == null)
+      {
+         throw new IllegalArgumentException("Cannot add null environment entry");
+      }
+      
+      if (this.environmentEntries == null)
+      {
+         this.environmentEntries = new ArrayList<EnvironmentEntryType>();
+      }
+      this.environmentEntries.add(entry);
+   }
+   
    private void initEnvironmentReferences()
    {
-      this.environmentReferences = new ArrayList<EnvironmentEntryType>();
+      this.environmentEntries = new ArrayList<EnvironmentEntryType>();
 
       // simple env entry references
       EnvironmentEntriesMetaData envEntries = this.delegate.getEnvironmentEntries();
@@ -83,7 +98,7 @@ public class JndiEnvironmentMetadata implements JndiEnvironment
       {
          for (EnvironmentEntryMetaData envEntry : envEntries)
          {
-            this.environmentReferences.add(new EnvEntry(envEntry));
+            this.environmentEntries.add(new EnvEntry(envEntry));
          }
       }
       
@@ -93,7 +108,7 @@ public class JndiEnvironmentMetadata implements JndiEnvironment
       {
          for (AnnotatedEJBReferenceMetaData annotatedEjbRef : annotatedEjbRefs)
          {
-            this.environmentReferences.add(new AnnotatedEJBReference(annotatedEjbRef));
+            this.environmentEntries.add(new AnnotatedEJBReference(annotatedEjbRef));
          }
       }
 
@@ -103,7 +118,7 @@ public class JndiEnvironmentMetadata implements JndiEnvironment
       {
          for (EJBLocalReferenceMetaData ejbLocalRef : ejbLocalRefs)
          {
-            this.environmentReferences.add(new EJBLocalReference(ejbLocalRef));
+            this.environmentEntries.add(new EJBLocalReference(ejbLocalRef));
          }
       }
 
@@ -113,7 +128,7 @@ public class JndiEnvironmentMetadata implements JndiEnvironment
       {
          for (EJBReferenceMetaData ejbRef : ejbRefs)
          {
-            this.environmentReferences.add(new EJBReference(ejbRef));
+            this.environmentEntries.add(new EJBReference(ejbRef));
          }
       }
 
@@ -123,7 +138,7 @@ public class JndiEnvironmentMetadata implements JndiEnvironment
       {
          for (PersistenceUnitReferenceMetaData persistenceUnitRef : persistenceUnitRefs)
          {
-            this.environmentReferences.add(new PersistenceUnitReference(persistenceUnitRef));
+            this.environmentEntries.add(new PersistenceUnitReference(persistenceUnitRef));
          }
       }
 
@@ -133,7 +148,7 @@ public class JndiEnvironmentMetadata implements JndiEnvironment
       {
          for (PersistenceContextReferenceMetaData persistenceCtxRef : persistenceCtxRefs)
          {
-            this.environmentReferences.add(new PersistenceContextReference(persistenceCtxRef));
+            this.environmentEntries.add(new PersistenceContextReference(persistenceCtxRef));
          }
       }
 
@@ -143,7 +158,7 @@ public class JndiEnvironmentMetadata implements JndiEnvironment
       {
          for (ResourceEnvironmentReferenceMetaData resourceEnvRef : resourceEnvRefs)
          {
-            this.environmentReferences.add(new ResourceEnvReference(resourceEnvRef));
+            this.environmentEntries.add(new ResourceEnvReference(resourceEnvRef));
          }
       }
       
@@ -153,7 +168,7 @@ public class JndiEnvironmentMetadata implements JndiEnvironment
       {
          for (ResourceReferenceMetaData resourceRef : resourceRefs)
          {
-            this.environmentReferences.add(new ResourceReference(resourceRef));
+            this.environmentEntries.add(new ResourceReference(resourceRef));
          }
       }
       
@@ -163,7 +178,7 @@ public class JndiEnvironmentMetadata implements JndiEnvironment
       {
          for (MessageDestinationReferenceMetaData messageDestRef : messageDestRefs)
          {
-            this.environmentReferences.add(new MessageDestinationReference(messageDestRef));
+            this.environmentEntries.add(new MessageDestinationReference(messageDestRef));
          }
       }
       
@@ -173,8 +188,10 @@ public class JndiEnvironmentMetadata implements JndiEnvironment
       {
          for (ServiceReferenceMetaData serviceRef : serviceRefs)
          {
-            this.environmentReferences.add(new ServiceReference(serviceRef));
+            this.environmentEntries.add(new ServiceReference(serviceRef));
          }
       }
    }
+
+   
 }

@@ -19,40 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.mc.test.common;
-
-import java.util.Collection;
+package org.jboss.switchboard.javaee.environment;
 
 import org.jboss.switchboard.spi.EnvironmentEntryType;
-import org.jboss.switchboard.spi.JndiEnvironment;
 
 /**
- * DummyJndiEnvironment
+ * ValidatorRefType
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class DummyJndiEnvironment implements JndiEnvironment
+public interface ValidatorRefType extends EnvironmentEntryType
 {
-
-   private Collection<EnvironmentEntryType> entries;
-   
-   public DummyJndiEnvironment(Collection<EnvironmentEntryType> entries)
-   {
-      this.entries = entries;
-   }
-   
-   @Override
-   public Collection<EnvironmentEntryType> getEntries()
-   {
-      return this.entries;
-   }
-
-   @Override
-   public void addEntry(EnvironmentEntryType entry)
-   {
-      this.entries.add(entry);
-      
-   }
 
 }

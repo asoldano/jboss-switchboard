@@ -21,7 +21,10 @@
  */
 package org.jboss.switchboard.mc.resource.provider;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jboss.deployers.structure.spi.DeploymentUnit;
 import org.jboss.switchboard.impl.resource.LinkRefResource;
@@ -29,6 +32,7 @@ import org.jboss.switchboard.javaee.environment.InjectionTarget;
 import org.jboss.switchboard.javaee.environment.ResourceRefType;
 import org.jboss.switchboard.mc.spi.MCBasedResourceProvider;
 import org.jboss.switchboard.spi.Resource;
+import org.jboss.switchboard.spi.ResourceProvider;
 
 /**
  * ResourceRefResourceProvider
@@ -36,16 +40,35 @@ import org.jboss.switchboard.spi.Resource;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class ResourceRefResourceProvider implements MCBasedResourceProvider<ResourceRefType>
+public class ResourceRefResourceProviderDelegator implements MCBasedResourceProvider<ResourceRefType>
 {
 
+   /**
+    * Resource providers for various "types" of resource-ref entries.
+    * The key of this map, is the type (for ex: javax.sql.DataSource) of the resource-ref and the value
+    * is the ResourceProvider   
+    */
+   private Map<String, MCBasedResourceProvider<ResourceRefType>> typedResourceRefResourceProviders = new HashMap<String, MCBasedResourceProvider<ResourceRefType>>();
    
+   /**
+    * Resource providers, for resource-ref entries, which do not work on any specific "type"
+    * of a resource-ref. For example, a managed bean resource-ref {@link ResourceProvider} 
+    * could process a resource-ref of any (user defined) managed bean type.
+    */
+   private Collection<MCBasedResourceProvider<ResourceRefType>> fallbackResourceRefResourceProviders = new ArrayList<MCBasedResourceProvider<ResourceRefType>>();
+
+   /**
+    * {@inheritDoc}
+    */
    @Override
    public Class<ResourceRefType> getEnvironmentEntryType()
    {
       return ResourceRefType.class;
    }
 
+   /**
+    * 
+    */
    @Override
    public Resource provide(DeploymentUnit deploymentUnit, ResourceRefType resRef)
    {
@@ -63,7 +86,52 @@ public class ResourceRefResourceProvider implements MCBasedResourceProvider<Reso
          return new LinkRefResource(mappedName);
       }
       
-      return null;
+      // get the resource type and see if there's a resource-ref resource provider
+      // available for that type
+      String resourceType = this.getResourceRefType(deploymentUnit.getClassLoader(), resRef);
+      if (resourceType != null)
+      {
+         resourceType = resourceType.trim();
+      }
+      MCBasedResourceProvider<ResourceRefType> resourceRefProvider = this.typedResourceRefResourceProviders.get(resourceType);
+      // if available, process it
+      if (resourceRefProvider != null)
+      {
+         return resourceRefProvider.provide(deploymentUnit, resRef);
+      }
+      // fallback on the other resource-ref resource provider(s), if any.
+      for (MCBasedResourceProvider<ResourceRefType> provider : this.fallbackResourceRefResourceProviders)
+      {
+         if (provider != null)
+         {
+            Resource resource = provider.provide(deploymentUnit, resRef);
+            if (resource != null)
+            {
+               return resource;
+            }
+         }
+      }
+      
+      throw new RuntimeException("No ResourceProvider could process resource-ref named: " + resRef.getName()
+            + " for deployment unit: " + deploymentUnit);
+   }
+   
+   public void setTypedResourceRefResourceProviders(Map<String, MCBasedResourceProvider<ResourceRefType>> providers)
+   {
+      if (providers == null)
+      {
+         throw new IllegalArgumentException("Cannot set null to typed resource-ref resource providers");
+      }
+      this.typedResourceRefResourceProviders = providers;
+   }
+   
+   public void setFallbackResourceRefResourceProviders(Collection<MCBasedResourceProvider<ResourceRefType>> providers)
+   {
+      if (providers == null)
+      {
+         throw new IllegalArgumentException("Cannot set null to resource-ref resource providers");
+      }
+      this.fallbackResourceRefResourceProviders = providers;
    }
    
    /**

@@ -44,7 +44,13 @@ import org.jboss.reloaded.naming.deployers.javaee.JavaEEComponentInformer;
 import org.jboss.reloaded.naming.spi.JavaEEComponent;
 import org.jboss.reloaded.naming.spi.JavaEEModule;
 import org.jboss.switchboard.impl.ENCOperator;
+import org.jboss.switchboard.jbmeta.javaee.environment.BeanManagerReference;
 import org.jboss.switchboard.jbmeta.javaee.environment.JndiEnvironmentMetadata;
+import org.jboss.switchboard.jbmeta.javaee.environment.ORBReference;
+import org.jboss.switchboard.jbmeta.javaee.environment.TransactionSynchronizationRegistryReference;
+import org.jboss.switchboard.jbmeta.javaee.environment.UserTransactionReference;
+import org.jboss.switchboard.jbmeta.javaee.environment.ValidatorFactoryReference;
+import org.jboss.switchboard.jbmeta.javaee.environment.ValidatorReference;
 import org.jboss.switchboard.mc.JndiEnvironmentProcessor;
 import org.jboss.switchboard.mc.SwitchBoardImpl;
 import org.jboss.switchboard.spi.Barrier;
@@ -100,12 +106,9 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
       Map<String, Resource> resources = new HashMap<String, Resource>();
       for (Environment env : environments)
       {
-         JndiEnvironment jndiEnv = this.convert(env);
+         JndiEnvironment jndiEnv = new JndiEnvironmentMetadata(env);
+         this.addCommonJavaComponentEntries(jndiEnv);
          resources.putAll(this.jndiEnvProcessor.process(unit, jndiEnv));
-      }
-      if (resources.isEmpty())
-      {
-         return;
       }
       // A ENCOperator might already exist for the unit. For example,
       // for EJBs and servlets deployed in a single .war (component), there will be 
@@ -141,11 +144,22 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
       }
    }
 
-   private JndiEnvironment convert(Environment environment)
+   protected void addCommonJavaComponentEntries(JndiEnvironment jndiEnv)
    {
-      return new JndiEnvironmentMetadata(environment);
+      // for java:comp/ORB
+      jndiEnv.addEntry(new ORBReference());
+      // for java:comp/UserTransaction
+      jndiEnv.addEntry(new UserTransactionReference());
+      // for java:comp/TransactionSynchronizationRegistry
+      jndiEnv.addEntry(new TransactionSynchronizationRegistryReference());
+      // for java:comp/BeanManager
+      jndiEnv.addEntry(new BeanManagerReference());
+      // for java:comp/Validator
+      jndiEnv.addEntry(new ValidatorReference());
+      // for java:comp/ValidatorFactory
+      jndiEnv.addEntry(new ValidatorFactoryReference());
    }
-
+   
    protected BeanMetaData createSwitchBoardBMD(DeploymentUnit unit, SwitchBoardImpl switchBoard)
    {
       String mcBeanName = switchBoard.getId();
@@ -237,7 +251,7 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
          builder.append("application=").append(applicationName).append(",");
       }
       builder.append("module=").append(moduleName);
-      if (!this.isSharedENC(deploymentUnit))
+      if (this.informer.isJavaEEComponent(deploymentUnit) && !this.isSharedENC(deploymentUnit))
       {
          String componentName = this.getComponentName(deploymentUnit);
          builder.append(",component=").append(componentName);

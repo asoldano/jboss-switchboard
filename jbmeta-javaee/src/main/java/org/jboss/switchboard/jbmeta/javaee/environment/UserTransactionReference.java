@@ -19,40 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.switchboard.mc.test.common;
+package org.jboss.switchboard.jbmeta.javaee.environment;
 
-import java.util.Collection;
-
-import org.jboss.switchboard.spi.EnvironmentEntryType;
-import org.jboss.switchboard.spi.JndiEnvironment;
+import org.jboss.switchboard.javaee.environment.UserTransactionRefType;
 
 /**
- * DummyJndiEnvironment
+ * UserTransactionReference
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class DummyJndiEnvironment implements JndiEnvironment
+public class UserTransactionReference implements UserTransactionRefType
 {
 
-   private Collection<EnvironmentEntryType> entries;
-   
-   public DummyJndiEnvironment(Collection<EnvironmentEntryType> entries)
-   {
-      this.entries = entries;
-   }
-   
    @Override
-   public Collection<EnvironmentEntryType> getEntries()
+   public String getName()
    {
-      return this.entries;
-   }
-
-   @Override
-   public void addEntry(EnvironmentEntryType entry)
-   {
-      this.entries.add(entry);
-      
+      return "UserTransaction";
    }
 
 }
