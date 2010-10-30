@@ -168,7 +168,7 @@ public class JndiEnvironmentMetadata implements JndiEnvironment
       {
          for (ResourceReferenceMetaData resourceRef : resourceRefs)
          {
-            this.environmentEntries.add(new ResourceReference(resourceRef));
+            this.environmentEntries.add(new JBossResourceReference(resourceRef));
          }
       }
       

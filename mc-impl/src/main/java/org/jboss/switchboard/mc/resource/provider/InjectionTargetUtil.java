@@ -24,8 +24,10 @@ package org.jboss.switchboard.mc.resource.provider;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Collection;
 
 import org.jboss.switchboard.javaee.environment.InjectionTarget;
+import org.jboss.switchboard.javaee.environment.JavaEEResourceType;
 
 /**
  * InjectionTargetUtil
@@ -74,5 +76,17 @@ public class InjectionTargetUtil
          return ((Method) accessibleObject).getParameterTypes()[0];
       }
       return null;
+   }
+   
+   public static Class<?> getInjectionTargetPropertyType(ClassLoader cl, JavaEEResourceType javaeeResource)
+   {
+      Collection<InjectionTarget> injectionTargets = javaeeResource.getInjectionTargets();
+      if (injectionTargets == null || injectionTargets.isEmpty())
+      {
+         return null;
+      }
+      InjectionTarget injectionTarget = injectionTargets.iterator().next();
+      Class<?> type = InjectionTargetUtil.getInjectionTargetPropertyType(cl, injectionTarget);
+      return type;
    }
 }

@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.deployers.structure.spi.DeploymentUnit;
+import org.jboss.logging.Logger;
 import org.jboss.switchboard.mc.resource.provider.ResourceProviderRegistry;
 import org.jboss.switchboard.mc.spi.MCBasedResourceProvider;
 import org.jboss.switchboard.spi.EnvironmentEntryType;
@@ -40,27 +41,34 @@ import org.jboss.switchboard.spi.Resource;
 public class JndiEnvironmentProcessor
 {
 
-   private ResourceProviderRegistry registry;
+   /**
+    * Logger
+    */
+   private static Logger logger = Logger.getLogger(JndiEnvironmentProcessor.class);
    
+   private ResourceProviderRegistry registry;
+    
    public JndiEnvironmentProcessor(ResourceProviderRegistry registry)
    {
       this.registry = registry;
    }
    
-   public Map<String, Resource> process(DeploymentUnit deploymentUnit, JndiEnvironment environment)
+   public Map<String, Resource> process(DeploymentUnit unit, JndiEnvironment environment)
    {
       Map<String, Resource> resources = new HashMap<String, Resource>();
-      for (EnvironmentEntryType type : environment.getEntries())
+      for (EnvironmentEntryType entry : environment.getEntries())
       {
-         MCBasedResourceProvider<EnvironmentEntryType> provider = this.registry.getResourceProvider((Class<EnvironmentEntryType>) type.getClass());
+         MCBasedResourceProvider<EnvironmentEntryType> provider = this.registry.getResourceProvider((Class<EnvironmentEntryType>) entry.getClass());
          if (provider == null)
          {
+            logger.debug(entry.getName() + " will not be available in ENC, of component in deployment unit: "
+                        + unit + " ,because no ResourceProvider was available for type: " + entry.getClass());
             continue;
          }
-         Resource resource = provider.provide(deploymentUnit, type);
+         Resource resource = provider.provide(unit, entry);
          if (resource != null)
          {
-            resources.put(type.getName(), resource);
+            resources.put(entry.getName(), resource);
          }
       }
       return resources;

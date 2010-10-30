@@ -28,8 +28,8 @@ import java.util.Map;
 
 import org.jboss.deployers.structure.spi.DeploymentUnit;
 import org.jboss.switchboard.impl.resource.LinkRefResource;
-import org.jboss.switchboard.javaee.environment.InjectionTarget;
 import org.jboss.switchboard.javaee.environment.ResourceRefType;
+import org.jboss.switchboard.javaee.jboss.environment.JBossResourceRefType;
 import org.jboss.switchboard.mc.spi.MCBasedResourceProvider;
 import org.jboss.switchboard.spi.Resource;
 import org.jboss.switchboard.spi.ResourceProvider;
@@ -40,7 +40,7 @@ import org.jboss.switchboard.spi.ResourceProvider;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class ResourceRefResourceProviderDelegator implements MCBasedResourceProvider<ResourceRefType>
+public class ResourceRefResourceProviderDelegator implements MCBasedResourceProvider<JBossResourceRefType>
 {
 
    /**
@@ -48,29 +48,29 @@ public class ResourceRefResourceProviderDelegator implements MCBasedResourceProv
     * The key of this map, is the type (for ex: javax.sql.DataSource) of the resource-ref and the value
     * is the ResourceProvider   
     */
-   private Map<String, MCBasedResourceProvider<ResourceRefType>> typedResourceRefResourceProviders = new HashMap<String, MCBasedResourceProvider<ResourceRefType>>();
+   private Map<String, MCBasedResourceProvider<JBossResourceRefType>> typedResourceRefResourceProviders = new HashMap<String, MCBasedResourceProvider<JBossResourceRefType>>();
    
    /**
     * Resource providers, for resource-ref entries, which do not work on any specific "type"
     * of a resource-ref. For example, a managed bean resource-ref {@link ResourceProvider} 
     * could process a resource-ref of any (user defined) managed bean type.
     */
-   private Collection<MCBasedResourceProvider<ResourceRefType>> fallbackResourceRefResourceProviders = new ArrayList<MCBasedResourceProvider<ResourceRefType>>();
+   private Collection<MCBasedResourceProvider<JBossResourceRefType>> fallbackResourceRefResourceProviders = new ArrayList<MCBasedResourceProvider<JBossResourceRefType>>();
 
    /**
     * {@inheritDoc}
     */
    @Override
-   public Class<ResourceRefType> getEnvironmentEntryType()
+   public Class<JBossResourceRefType> getEnvironmentEntryType()
    {
-      return ResourceRefType.class;
+      return JBossResourceRefType.class;
    }
 
    /**
     * 
     */
    @Override
-   public Resource provide(DeploymentUnit deploymentUnit, ResourceRefType resRef)
+   public Resource provide(DeploymentUnit deploymentUnit, JBossResourceRefType resRef)
    {
       // first check lookup name
       String lookupName = resRef.getLookupName();
@@ -86,6 +86,13 @@ public class ResourceRefResourceProviderDelegator implements MCBasedResourceProv
          return new LinkRefResource(mappedName);
       }
       
+      // now check (JBoss specific jndi name)!
+      String jndiName = resRef.getJNDIName();
+      if (jndiName != null && !jndiName.trim().isEmpty())
+      {
+         return new LinkRefResource(jndiName);
+      }
+      
       // get the resource type and see if there's a resource-ref resource provider
       // available for that type
       String resourceType = this.getResourceRefType(deploymentUnit.getClassLoader(), resRef);
@@ -93,14 +100,14 @@ public class ResourceRefResourceProviderDelegator implements MCBasedResourceProv
       {
          resourceType = resourceType.trim();
       }
-      MCBasedResourceProvider<ResourceRefType> resourceRefProvider = this.typedResourceRefResourceProviders.get(resourceType);
+      MCBasedResourceProvider<JBossResourceRefType> resourceRefProvider = this.typedResourceRefResourceProviders.get(resourceType);
       // if available, process it
       if (resourceRefProvider != null)
       {
          return resourceRefProvider.provide(deploymentUnit, resRef);
       }
       // fallback on the other resource-ref resource provider(s), if any.
-      for (MCBasedResourceProvider<ResourceRefType> provider : this.fallbackResourceRefResourceProviders)
+      for (MCBasedResourceProvider<JBossResourceRefType> provider : this.fallbackResourceRefResourceProviders)
       {
          if (provider != null)
          {
@@ -116,7 +123,7 @@ public class ResourceRefResourceProviderDelegator implements MCBasedResourceProv
             + " for deployment unit: " + deploymentUnit);
    }
    
-   public void setTypedResourceRefResourceProviders(Map<String, MCBasedResourceProvider<ResourceRefType>> providers)
+   public void setTypedResourceRefResourceProviders(Map<String, MCBasedResourceProvider<JBossResourceRefType>> providers)
    {
       if (providers == null)
       {
@@ -125,7 +132,7 @@ public class ResourceRefResourceProviderDelegator implements MCBasedResourceProv
       this.typedResourceRefResourceProviders = providers;
    }
    
-   public void setFallbackResourceRefResourceProviders(Collection<MCBasedResourceProvider<ResourceRefType>> providers)
+   public void setFallbackResourceRefResourceProviders(Collection<MCBasedResourceProvider<JBossResourceRefType>> providers)
    {
       if (providers == null)
       {
@@ -160,13 +167,7 @@ public class ResourceRefResourceProviderDelegator implements MCBasedResourceProv
       {
          return explicitType;
       }
-      Collection<InjectionTarget> injectionTargets = resourceRef.getInjectionTargets();
-      if (injectionTargets == null || injectionTargets.isEmpty())
-      {
-         return null;
-      }
-      InjectionTarget injectionTarget = injectionTargets.iterator().next();
-      Class<?> type = InjectionTargetUtil.getInjectionTargetPropertyType(cl, injectionTarget);
+      Class<?> type = InjectionTargetUtil.getInjectionTargetPropertyType(cl, resourceRef);
       return type == null ? null : type.getName();
    }
 

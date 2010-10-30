@@ -54,11 +54,13 @@ import org.jboss.switchboard.jbmeta.javaee.environment.ValidatorReference;
 import org.jboss.switchboard.mc.JndiEnvironmentProcessor;
 import org.jboss.switchboard.mc.SwitchBoardImpl;
 import org.jboss.switchboard.spi.Barrier;
+import org.jboss.switchboard.spi.EnvironmentEntryType;
 import org.jboss.switchboard.spi.JndiEnvironment;
 import org.jboss.switchboard.spi.Resource;
+import org.jboss.switchboard.spi.ResourceProvider;
 
 /**
- * AbstractJavaEEComponentDeployer
+ * AbstractENCOperatorDeployer
  *
  * @author Jaikiran Pai
  * @version $Revision: $
@@ -107,7 +109,7 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
       for (Environment env : environments)
       {
          JndiEnvironment jndiEnv = new JndiEnvironmentMetadata(env);
-         this.addCommonJavaComponentEntries(jndiEnv);
+         this.addJavaComponentEntries(jndiEnv);
          resources.putAll(this.jndiEnvProcessor.process(unit, jndiEnv));
       }
       // A ENCOperator might already exist for the unit. For example,
@@ -144,7 +146,29 @@ public abstract class AbstractENCOperatorDeployer extends AbstractRealDeployer
       }
    }
 
-   protected void addCommonJavaComponentEntries(JndiEnvironment jndiEnv)
+   /**
+    * Add additional {@link EnvironmentEntryType environment entries}, to the {@link JndiEnvironment},
+    * which are expected to be bound in java:comp of the component. 
+    * <p>
+    *   Typically, these entries that go into java:comp, unlike the entries that go into java:comp/env,
+    *   are <i>not</i> driven by deployment descriptors or annotation in the user deployments. For example,
+    *   the spec mandates that the following resources be made available in the java:comp of an component:
+    *   <ul>
+    *       <li>ORB (at java:comp/ORB)</li>
+    *       <li>UserTransaction (at java:comp/UserTransaction)</li>
+    *       <li>TransactionSynchronizationRegistry (at java:comp/TransactionSynchronizationRegistry)</li>
+    *       <li>BeanManager (at java:comp/BeanManager)</li>
+    *       <li>Validator (at java:comp/Validator)</li>
+    *       <li>ValidatorFactory (at java:comp/ValidatorFactory)</li>
+    *   </ul>
+    * This method add these  {@link EnvironmentEntryType environment entries} to the {@link JndiEnvironment},
+    * so that the corresponding {@link ResourceProvider}s can then pick these up and provide the appropriate
+    * {@link Resource}s.
+    * 
+    * </p>
+    * @param jndiEnv
+    */
+   protected void addJavaComponentEntries(JndiEnvironment jndiEnv)
    {
       // for java:comp/ORB
       jndiEnv.addEntry(new ORBReference());

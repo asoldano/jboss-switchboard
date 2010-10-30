@@ -25,8 +25,8 @@ import org.jboss.metadata.javaee.spec.ResourceAuthorityType;
 import org.jboss.metadata.javaee.spec.ResourceReferenceMetaData;
 import org.jboss.metadata.javaee.spec.ResourceSharingScopeType;
 import org.jboss.switchboard.javaee.environment.ResourceAuthType;
-import org.jboss.switchboard.javaee.environment.ResourceRefType;
 import org.jboss.switchboard.javaee.environment.ResourceSharingScope;
+import org.jboss.switchboard.javaee.jboss.environment.JBossResourceRefType;
 
 /**
  * ResourceReference
@@ -34,12 +34,12 @@ import org.jboss.switchboard.javaee.environment.ResourceSharingScope;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class ResourceReference extends JavaEEResource implements ResourceRefType
+public class JBossResourceReference extends JavaEEResource implements JBossResourceRefType
 {
 
    private ResourceReferenceMetaData delegate;
 
-   public ResourceReference(ResourceReferenceMetaData delegate)
+   public JBossResourceReference(ResourceReferenceMetaData delegate)
    {
       super(delegate.getLookupName(), delegate.getMappedName(), InjectionTargetConverter.convert(delegate
             .getInjectionTargets()));
@@ -78,6 +78,24 @@ public class ResourceReference extends JavaEEResource implements ResourceRefType
    public String getName()
    {
       return "env/" + this.delegate.getResourceRefName();
+   }
+
+   @Override
+   public String getJNDIName()
+   {
+      return this.delegate.getJndiName();
+   }
+
+   @Override
+   public String getResourceURL()
+   {
+      return this.delegate.getResUrl();
+   }
+
+   @Override
+   public boolean isIgnoreDependency()
+   {
+      return this.delegate.isDependencyIgnored();
    }
 
 }
