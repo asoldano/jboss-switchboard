@@ -28,6 +28,7 @@ import org.jboss.deployers.structure.spi.DeploymentUnit;
 import org.jboss.switchboard.impl.resource.IndependentResource;
 import org.jboss.switchboard.javaee.environment.ResourceRefType;
 import org.jboss.switchboard.javaee.jboss.environment.JBossResourceRefType;
+import org.jboss.switchboard.javaee.util.InjectionTargetUtil;
 import org.jboss.switchboard.mc.spi.MCBasedResourceProvider;
 import org.jboss.switchboard.spi.Resource;
 

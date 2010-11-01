@@ -21,9 +21,6 @@
  */
 package org.jboss.switchboard.mc.resource.provider;
 
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Collection;
 
 import org.jboss.deployers.structure.spi.DeploymentUnit;
@@ -31,6 +28,7 @@ import org.jboss.logging.Logger;
 import org.jboss.switchboard.impl.resource.IndependentResource;
 import org.jboss.switchboard.javaee.environment.InjectionTarget;
 import org.jboss.switchboard.javaee.environment.SimpleEnvironmentEntryType;
+import org.jboss.switchboard.javaee.util.InjectionTargetUtil;
 import org.jboss.switchboard.mc.spi.MCBasedResourceProvider;
 import org.jboss.switchboard.spi.Resource;
 import org.jboss.switchboard.spi.ResourceProvider;

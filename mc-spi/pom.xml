@@ -48,7 +48,6 @@
          <groupId>org.jboss.deployers</groupId>
          <artifactId>jboss-deployers-structure-spi</artifactId>
          <version>${version.org.jboss.deployers.structure}</version>
-         <scope>provided</scope>
       </dependency>
 
       

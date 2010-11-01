@@ -30,6 +30,7 @@ import org.jboss.deployers.structure.spi.DeploymentUnit;
 import org.jboss.switchboard.impl.resource.LinkRefResource;
 import org.jboss.switchboard.javaee.environment.ResourceRefType;
 import org.jboss.switchboard.javaee.jboss.environment.JBossResourceRefType;
+import org.jboss.switchboard.javaee.util.InjectionTargetUtil;
 import org.jboss.switchboard.mc.spi.MCBasedResourceProvider;
 import org.jboss.switchboard.spi.Resource;
 import org.jboss.switchboard.spi.ResourceProvider;
@@ -86,7 +87,7 @@ public class ResourceRefResourceProviderDelegator implements MCBasedResourceProv
          return new LinkRefResource(mappedName);
       }
       
-      // now check (JBoss specific jndi name)!
+      // now check (JBoss specific) jndi name!
       String jndiName = resRef.getJNDIName();
       if (jndiName != null && !jndiName.trim().isEmpty())
       {
