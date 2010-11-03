@@ -88,7 +88,7 @@ public class EnvEntryResourceProvider implements MCBasedResourceProvider<SimpleE
          return null;
       }
       // find out the type of the env-entry
-      String envEntryType = this.getEnvEntryType(cl, envEntry);
+      Class<?> envEntryType = this.getEnvEntryType(cl, envEntry);
 
       if (envEntryType == null)
       {
@@ -97,31 +97,31 @@ public class EnvEntryResourceProvider implements MCBasedResourceProvider<SimpleE
 
       // Now, convert the string value to it's appropriate type and return
       
-      if (envEntryType.equals(String.class.getName()))
+      if (envEntryType.equals(String.class))
       {
          return value;
       }
-      else if (envEntryType.equals(Integer.class.getName()) || envEntryType.equals(int.class.getName()))
+      else if (envEntryType.equals(Integer.class) || envEntryType.equals(int.class))
       {
          return new Integer(value);
       }
-      else if (envEntryType.equals(Long.class.getName()) || envEntryType.equals(long.class.getName()))
+      else if (envEntryType.equals(Long.class) || envEntryType.equals(long.class))
       {
          return new Long(value);
       }
-      else if (envEntryType.equals(Double.class.getName()) || envEntryType.equals(double.class.getName()))
+      else if (envEntryType.equals(Double.class) || envEntryType.equals(double.class))
       {
          return new Double(value);
       }
-      else if (envEntryType.equals(Float.class.getName()) || envEntryType.equals(float.class.getName()))
+      else if (envEntryType.equals(Float.class) || envEntryType.equals(float.class))
       {
          return new Float(value);
       }
-      else if (envEntryType.equals(Byte.class.getName()) || envEntryType.equals(byte.class.getName()))
+      else if (envEntryType.equals(Byte.class) || envEntryType.equals(byte.class))
       {
          return new Byte(value);
       }
-      else if (envEntryType.equals(Character.class.getName()) || envEntryType.equals(char.class.getName()))
+      else if (envEntryType.equals(Character.class) || envEntryType.equals(char.class))
       {
          if (value == null || value.length() == 0)
          {
@@ -131,22 +131,39 @@ public class EnvEntryResourceProvider implements MCBasedResourceProvider<SimpleE
          {
             if (value.length() > 1)
             {
-               logger
-                     .warn("Warning character env-entry is too long: binding=" + envEntry.getName() + " value=" + value);
+               logger.warn("Warning character env-entry is too long: binding=" + envEntry.getName() + " value=" + value);
             }
             return new Character(value.charAt(0));
          }
       }
-      else if (envEntryType.equals(Short.class.getName()) || envEntryType.equals(short.class.getName()))
+      else if (envEntryType.equals(Short.class) || envEntryType.equals(short.class))
       {
          return new Short(value);
       }
-      else if (envEntryType.equals(Boolean.class.getName()) || envEntryType.equals(boolean.class.getName()))
+      else if (envEntryType.equals(Boolean.class) || envEntryType.equals(boolean.class))
       {
          return new Boolean(value);
       }
+      // The Java EE spec doesn't allow java.lang.Class or enum types to be env-entry.
+      // But we (JBoss) will allow these 2 additional types for env-entry.
+      else if (envEntryType.equals(Class.class))
+      {
+         try
+         {
+            return Class.forName(value, true, cl);
+         }
+         catch (ClassNotFoundException cnfe)
+         {
+            throw new RuntimeException("Could not load class: " + value + " for env-entry: " + envEntry.getName(), cnfe);
+         }
+      }
+      else if (envEntryType.isEnum())
+      {
+         return Enum.valueOf((Class)envEntryType, value);
+      }
       else
       {
+         // TODO: Throw exception instead?
          return value;
       }
    }
@@ -169,13 +186,20 @@ public class EnvEntryResourceProvider implements MCBasedResourceProvider<SimpleE
     * @param envEntry The Java EE env-entry
     * @return
     */
-   private String getEnvEntryType(ClassLoader cl, SimpleEnvironmentEntryType envEntry)
+   private Class<?> getEnvEntryType(ClassLoader cl, SimpleEnvironmentEntryType envEntry)
    {
       // first check whether the type is explicitly specified
       String explicitType = envEntry.getType();
-      if (explicitType != null && !explicitType.isEmpty())
+      if (explicitType != null && !explicitType.trim().isEmpty())
       {
-         return explicitType;
+         try
+         {
+            return this.loadClass(explicitType, cl);
+         }
+         catch (ClassNotFoundException cnfe)
+         {
+            throw new RuntimeException("Could not load class: " + explicitType + " for env-entry: " + envEntry.getName(), cnfe);
+         }
       }
       Collection<InjectionTarget> injectionTargets = envEntry.getInjectionTargets();
       if (injectionTargets == null || injectionTargets.isEmpty())
@@ -184,6 +208,53 @@ public class EnvEntryResourceProvider implements MCBasedResourceProvider<SimpleE
       }
       InjectionTarget injectionTarget = injectionTargets.iterator().next();
       Class<?> type = InjectionTargetUtil.getInjectionTargetPropertyType(cl, injectionTarget);
-      return type == null ? null : type.getName();
+      return type;
    }
+   
+   
+   private Class<?> loadClass(String className, ClassLoader cl) throws ClassNotFoundException
+   {
+      if (className.equals(void.class.getName()))
+      {
+         return void.class;
+      }
+      if (className.equals(byte.class.getName()))
+      {
+         return byte.class;
+      }
+      if (className.equals(short.class.getName()))
+      {
+         return short.class;
+      }
+      if (className.equals(int.class.getName()))
+      {
+         return int.class;
+      }
+      if (className.equals(long.class.getName()))
+      {
+         return long.class;
+      }
+      if (className.equals(char.class.getName()))
+      {
+         return char.class;
+      }
+      if (className.equals(boolean.class.getName()))
+      {
+         return boolean.class;
+      }
+      if (className.equals(float.class.getName()))
+      {
+         return float.class;
+      }
+      if (className.equals(double.class.getName()))
+      {
+         return double.class;
+      }
+      // Now that we know its not a primitive, lets just allow
+      // the passed classloader to handle the request.
+      // Note that we are intentionally using Class.forName(name,boolean,cl)
+      // to handle issues with loading array types in Java 6 http://bugs.sun.com/view_bug.do?bug_id=6434149
+      return Class.forName(className, false, cl);
+   }
+   
 }
