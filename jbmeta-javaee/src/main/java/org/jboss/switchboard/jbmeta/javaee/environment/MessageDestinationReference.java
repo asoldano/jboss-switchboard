@@ -23,8 +23,8 @@ package org.jboss.switchboard.jbmeta.javaee.environment;
 
 import org.jboss.metadata.javaee.spec.MessageDestinationReferenceMetaData;
 import org.jboss.metadata.javaee.spec.MessageDestinationUsageType;
-import org.jboss.switchboard.javaee.environment.MessageDestinationRefType;
 import org.jboss.switchboard.javaee.environment.MessageDestinationUsage;
+import org.jboss.switchboard.javaee.jboss.environment.JBossMessageDestinationRefType;
 
 /**
  * MessageDestinationReference
@@ -32,7 +32,7 @@ import org.jboss.switchboard.javaee.environment.MessageDestinationUsage;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class MessageDestinationReference extends JavaEEResource implements MessageDestinationRefType
+public class MessageDestinationReference extends JavaEEResource implements JBossMessageDestinationRefType
 {
 
    private MessageDestinationReferenceMetaData delegate;
@@ -70,6 +70,18 @@ public class MessageDestinationReference extends JavaEEResource implements Messa
    public String getName()
    {
       return "env/" + this.delegate.getMessageDestinationRefName();
+   }
+
+   @Override
+   public String getJNDIName()
+   {
+      return this.delegate.getJndiName();
+   }
+
+   @Override
+   public boolean isIgnoreDependency()
+   {
+      return this.delegate.isDependencyIgnored();
    }
 
 
