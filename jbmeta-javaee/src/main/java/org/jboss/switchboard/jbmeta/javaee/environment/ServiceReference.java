@@ -27,11 +27,15 @@ import java.util.List;
 
 import javax.xml.namespace.QName;
 
+import org.jboss.metadata.javaee.jboss.JBossPortComponentRef;
 import org.jboss.metadata.javaee.spec.PortComponentRef;
+import org.jboss.metadata.javaee.spec.ServiceReferenceHandlerChainMetaData;
+import org.jboss.metadata.javaee.spec.ServiceReferenceHandlerChainsMetaData;
 import org.jboss.metadata.javaee.spec.ServiceReferenceHandlerMetaData;
 import org.jboss.metadata.javaee.spec.ServiceReferenceHandlersMetaData;
 import org.jboss.metadata.javaee.spec.ServiceReferenceMetaData;
 import org.jboss.switchboard.javaee.environment.Handler;
+import org.jboss.switchboard.javaee.environment.HandlerChainType;
 import org.jboss.switchboard.javaee.environment.PortComponent;
 import org.jboss.switchboard.javaee.environment.ServiceRefType;
 
@@ -48,6 +52,8 @@ public class ServiceReference extends JavaEEResource implements ServiceRefType
 
    private List<Handler> handlers;
    
+   private List<HandlerChainType> handlerChains;
+   
    private Collection<PortComponent> portComponents;
    
    public ServiceReference(ServiceReferenceMetaData delegate)
@@ -55,13 +61,14 @@ public class ServiceReference extends JavaEEResource implements ServiceRefType
       super(delegate.getLookupName(), delegate.getMappedName(), InjectionTargetConverter.convert(delegate.getInjectionTargets()));
       this.delegate = delegate;
       this.initHandlers();
+      this.initHandlerChains();
       this.initPortComponents();
    }
    
    @Override
-   public List<Handler> getHandlerChain()
+   public List<HandlerChainType> getHandlerChains()
    {
-      return this.handlers;
+      return this.handlerChains;
    }
 
    @Override
@@ -70,6 +77,12 @@ public class ServiceReference extends JavaEEResource implements ServiceRefType
       return this.handlers;
    }
 
+   @Override
+   public String getHandlerChain()
+   {
+      return this.delegate.getHandlerChain();
+   }
+   
    @Override
    public String getMappingFile()
    {
@@ -126,6 +139,21 @@ public class ServiceReference extends JavaEEResource implements ServiceRefType
       }
    }
    
+   private void initHandlerChains()
+   {
+      if (this.delegate.getHandlerChains() == null)
+      {
+         return;
+      }
+      ServiceReferenceHandlerChainsMetaData serviceHandlers = this.delegate.getHandlerChains();
+      List<ServiceReferenceHandlerChainMetaData> srhcList = serviceHandlers.getHandlers();
+      this.handlerChains = new ArrayList<HandlerChainType>(srhcList.size());
+      for (ServiceReferenceHandlerChainMetaData handlerChain : srhcList)
+      {
+         this.handlerChains.add(new HandlerChain(handlerChain));
+      }
+   }
+   
    private void initPortComponents()
    {
       if (this.delegate.getPortComponentRef() == null)
@@ -136,7 +164,14 @@ public class ServiceReference extends JavaEEResource implements ServiceRefType
       this.portComponents = new ArrayList<PortComponent>(portComponentRefs.size());
       for (PortComponentRef portCompRef : portComponentRefs)
       {
-         this.portComponents.add(new ServicePortComponent(portCompRef));
+         if (portCompRef instanceof JBossPortComponentRef)
+         {
+            this.portComponents.add(new JBossPortComponentReference((JBossPortComponentRef)portCompRef));
+         }
+         else
+         {
+            this.portComponents.add(new ServicePortComponent(portCompRef));
+         }
       }
    }
 

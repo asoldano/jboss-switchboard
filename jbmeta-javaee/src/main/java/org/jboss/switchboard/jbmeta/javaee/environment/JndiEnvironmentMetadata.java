@@ -24,6 +24,7 @@ package org.jboss.switchboard.jbmeta.javaee.environment;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.jboss.metadata.javaee.jboss.JBossServiceReferenceMetaData;
 import org.jboss.metadata.javaee.spec.AnnotatedEJBReferenceMetaData;
 import org.jboss.metadata.javaee.spec.AnnotatedEJBReferencesMetaData;
 import org.jboss.metadata.javaee.spec.EJBLocalReferenceMetaData;
@@ -188,7 +189,14 @@ public class JndiEnvironmentMetadata implements JndiEnvironment
       {
          for (ServiceReferenceMetaData serviceRef : serviceRefs)
          {
-            this.environmentEntries.add(new ServiceReference(serviceRef));
+            if (serviceRef instanceof JBossServiceReferenceMetaData)
+            {
+               this.environmentEntries.add(new JBossServiceReference((JBossServiceReferenceMetaData)serviceRef));
+            }
+            else
+            {
+               this.environmentEntries.add(new ServiceReference(serviceRef));
+            }
          }
       }
    }

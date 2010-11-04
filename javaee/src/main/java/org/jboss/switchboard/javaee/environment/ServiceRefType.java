@@ -88,5 +88,11 @@ public interface ServiceRefType extends JavaEEResourceType, EnvironmentEntryType
     * 
     * @return
     */
-   List<Handler> getHandlerChain();
+   List<HandlerChainType> getHandlerChains();
+   
+   /**
+    * 
+    * @return
+    */
+   String getHandlerChain();
 }
