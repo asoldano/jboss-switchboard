@@ -18,7 +18,7 @@
    <name>JBoss Metadata based adapter for SwitchBoard JavaEE  environment entry types</name>
 
    <properties>
-        <version.jboss.metadata.common>2.0.0.Alpha17</version.jboss.metadata.common>        
+        <version.jboss.metadata.common>2.0.0.Alpha19</version.jboss.metadata.common>        
    </properties>
 
    <dependencies>

@@ -19,9 +19,11 @@
     <properties>
         <version.org.jboss.deployers>2.2.0.Alpha4</version.org.jboss.deployers>
         <version.org.jboss.kernel>2.2.0.Alpha2</version.org.jboss.kernel>
-        <version.jboss.metadata.common>2.0.0.Alpha16</version.jboss.metadata.common>
+        <version.jboss.metadata.common>2.0.0.Alpha19</version.jboss.metadata.common>
         <version.jboss.metadata.ejb>2.0.0-alpha-18</version.jboss.metadata.ejb>
         <version.jboss.metadata.war>2.0.0.Alpha14</version.jboss.metadata.war>
+        <version.jbossws.common>1.4.0.CR3</version.jbossws.common>
+        <version.jbossws.spi>1.4.0.CR3</version.jbossws.spi>
         <version.ejbref.resolver>1.0.0-alpha-2</version.ejbref.resolver>
     </properties>
 
@@ -73,6 +75,17 @@
                     <artifactId>jboss-logging-spi</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.jboss.ws</groupId>
+            <artifactId>jbossws-common</artifactId>
+            <version>${version.jbossws.common}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.ws</groupId>
+            <artifactId>jbossws-spi</artifactId>
+            <version>${version.jbossws.spi}</version>
         </dependency>
 
 
